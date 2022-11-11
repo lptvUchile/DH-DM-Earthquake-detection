@@ -1,0 +1,8 @@
+<eps> 0
+!unk 1
+_sil 2
+_evento_ini 3
+_evento_mid 4
+_evento_end 5
+#0 6
+#1 7
