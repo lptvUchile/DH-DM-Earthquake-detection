@@ -1,6 +1,6 @@
 <img src="http://www.lptv.cl/wp-content/uploads/2017/08/LOGO_2017_740x150.png" width="1020">
 
-# DNN-HMM-Eartquakes-Detection
+# DNN-HMM-Earthquakes-Detection
 
 This repository contains the codes of an **end-to-end DNN-HMM based system with duration modelling for robust earthquake detection** proposed in: Nombre_Paper
 
