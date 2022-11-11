@@ -1,10 +1,4 @@
-name: dnn_hmm
-channels:
-  - pytorch
-  - conda-forge
-  - defaults
-dependencies:
-  - _libgcc_mutex=0.1=main
+name: env_DNN_HMM
   - _openmp_mutex=5.1=1_gnu
   - blas=1.0=mkl
   - brotli=1.0.9=h166bdaf_7
