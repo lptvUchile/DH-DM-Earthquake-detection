@@ -34,4 +34,4 @@ The input to *Main_Algorithm_ViterbiForced.py* are the means, variances and Gaus
 --------------
 
 ## Links
-* <a href="https://drive.google.com/drive/folders/1wuC61PkiOQijR6jmmMmchectpmvkPFOm?usp=share_link" target="_blank">Database</a>.
+* <a href="https://drive.google.com/drive/folders/1wuC61PkiOQijR6jmmMmchectpmvkPFOm?usp=share_link" target="_blank">Database</a>
