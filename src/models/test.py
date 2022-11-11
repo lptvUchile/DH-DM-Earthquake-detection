@@ -158,7 +158,7 @@ Probs_Observations_test = DNN2ProbObs(X_test)
 
 ##################################### Algoritmo Viterbi #######################################3
 
-file_viterbi_test = 'Results/Viterbi_DNN_test'
+file_viterbi_test = 'results/Viterbi_DNN_test'
 
 
 phones="../../models/phones_3estados.txt"

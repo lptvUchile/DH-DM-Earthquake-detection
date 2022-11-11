@@ -301,8 +301,8 @@ Probs_Observations_val = DNN2ProbObs(X_val)
 ##################################### Viterbi Algorithm  #######################################3
 
 
-file_viterbi_train = 'Results/Viterbi_DNN_train'
-file_viterbi_val = 'Results/Viterbi_DNN_val'
+file_viterbi_train = 'results/Viterbi_DNN_train'
+file_viterbi_val = 'results/Viterbi_DNN_val'
 #file_viterbi_train = 'results/Viterbi_DNN_train' #Este es el path que me gustaria que quedaran los ctm, pero no he podido
 
 phones="../../models/phones_3estados.txt"
