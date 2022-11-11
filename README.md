@@ -7,8 +7,8 @@ This repository contains the codes of an **end-to-end DNN-HMM based system with 
 --------------
 ## Description
 <p align="justify"> 
-The model proposed is an end-to-end DNN-HMM based scheme, i.e. it does not require previous phase-picking, backed by engineered features and combined with duration modelling of states and seismic events. The proposed engine requires 20 times or so fewer parameters than state-of-the-art methods and therefore needs a smaller training database. Moreover, duration modelling can increase the noise robustness of the detection system significantly, particularly with limited training data.
- </p>
+The model proposed is an end-to-end DNN-HMM based scheme, i.e. it does not require previous phase-picking, backed by engineered features and combined with duration modelling of states and seismic events. The proposed engine requires 20 times or so fewer parameters than state-of-the-art methods and therefore needs a smaller training database. Moreover, duration modelling can increase the noise robustness of the detection system significantly, particularly with limited training data.</p>
+
 --------------
 ## How to install 
 
