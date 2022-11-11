@@ -6,9 +6,9 @@ This repository contains the codes of an **end-to-end DNN-HMM based system with 
 
 --------------
 ## Description
-
+<p align="justify"> 
 The model proposed is an end-to-end DNN-HMM based scheme, i.e. it does not require previous phase-picking, backed by engineered features and combined with duration modelling of states and seismic events. The proposed engine requires 20 times or so fewer parameters than state-of-the-art methods and therefore needs a smaller training database. Moreover, duration modelling can increase the noise robustness of the detection system significantly, particularly with limited training data.
-
+ </p>
 --------------
 ## How to install 
 
@@ -21,6 +21,10 @@ conda env create -f env_DNN_HMM.yml
 --------------
 ## Tutorial
 
+
+you can use the following for such:
+
+<p align="justify"> 
 The following is a brief example and description of how to use this repository.
 The repository is mainly composed of three codes: *features_extraction.py*, *train.py* and *test.py*.
 
@@ -29,7 +33,7 @@ The repository is mainly composed of three codes: *features_extraction.py*, *tra
 -  test.py: The main aim of this code is to load an already trained model, which is saved in *models* folder and test a new database.
 
 The input to *Main_Algorithm_ViterbiForced.py* are the means, variances and Gaussian weights found in the *models/final.txt* file. This was generated from training a GMM with the toolkit Kaldi, using the traditional recipe. In this case, a monophonema model and a bigrama language model were defined. In addition, a manual segmentation of the training database is incorporated as an initial condition of the GMM training.
-
+ </p>
 
 --------------
 
