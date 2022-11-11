@@ -1,6 +1,6 @@
 <img src="http://www.lptv.cl/wp-content/uploads/2017/08/LOGO_2017_740x150.png" width="1020">
 
-# DNN-HMM-Duration-Modelling-Earthquake-Detection
+# DNN-HMM Duration Modelling Earthquake Detection
 
 This repository contains the codes of an **end-to-end DNN-HMM based system with duration modelling for robust earthquake detection** proposed in: Nombre_Paper
 
@@ -34,4 +34,4 @@ The input to *Main_Algorithm_ViterbiForced.py* are the means, variances and Gaus
 --------------
 
 ## Links
-In this <a href="https://drive.google.com/drive/folders/1wuC61PkiOQijR6jmmMmchectpmvkPFOm?usp=share_link" target="_blank">link</a> you will find the database used
+* <a href="https://drive.google.com/drive/folders/1wuC61PkiOQijR6jmmMmchectpmvkPFOm?usp=share_link" target="_blank">Database</a>.
