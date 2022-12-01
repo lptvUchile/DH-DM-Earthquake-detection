@@ -16,12 +16,13 @@ from Sequence_MatrixProb import Sequence_MatrixProb
 
 start = time.time()
 
-probs_path_results = '../../data/Iquique/features/Probs_Iquique_Val'
-Alineaciones_path_results = '../../data/Iquique/features/Alineaciones_ViterbiForzado_Iquique_Val.npy'
-lista_archivos = '../../data/Iquique/sac/Sac_Iquique_Val.scp'
-File_raw = '../../data/Iquique/features/raw_mfcc_train_Iquique_DEV.1.ark'
-modelo = "../../models/final_iquique.txt"
-Transcripcion = '../../data/Iquique/sac/Transcripcion_Iquique_Val'
+probs_path_results = '../../data/NorthChile/features/Probs_NorthChile_Val'
+Alineaciones_path_results = '../../data/NorthChile/features/Alineaciones_ViterbiForzado_NorthChile_Val.npy'
+lista_archivos = '../../data/NorthChile/sac/Sac_NorthChile_Val.scp'
+#File_raw = '../../data/NorthChile/features/raw_mfcc_train_NorthChile_DEV.1.ark'
+File_raw= "" # Features Matrix. Ouput of file Extraction_Features.py
+modelo = "../../models/final_NorthChile.txt"
+Transcripcion = '../../data/NorthChile/sac/Transcripcion_NorthChile_Val'
 
 
 Vocabulario = {

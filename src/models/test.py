@@ -4,6 +4,8 @@ Created on Sun Oct  9 12:14:14 2022
 
 @author: Marc
 """
+import sys
+sys.path.insert(1, '../utils/')
 
 import torch
 import torch.nn as nn
@@ -39,18 +41,13 @@ path_probPrior_train = '../../data/NorthChile/features/Probs_Prior_NorthChile_Tr
 path_modelo = '../../models/model_MLP_HMM_NorthChile.pt'
 
 ref_file_test = '../../data/NorthChile/reference/Referencia_NorthChile_Test.xlsx'
-#ref_file_test = '../../data/NorthChile/reference/Referencia_NorthChile.xlsx'
-#ref_file_test = '../../data/NorthChile/reference/Referencia_NorthChile_Test.xlsx'
-
 
 #path_feat_test = '../../data/NorthChile/features/Features_NorthChile_Test.npy'   
-path_feat_test = '../../data/NorthChile/features/Features_NorthChile_Test.npy'   
-#path_feat_test = '../../data/NorthChile/features/Features_NorthChile_Test.npy'   
+ 
+path_feat_test = '' # Features Matrix. Ouput of file Extraction_Features.py
 
-
-#sac_test = "../../data/NorthChile/sac/Sac_NorthChile_Test.scp"
 sac_test = "../../data/NorthChile/sac/Sac_NorthChile_Test.scp"
-#sac_test = "../../data/NorthChile/sac/Sac_NorthChile_Test.scp"
+
 
     
 probPriorTrain  = np.load(path_probPrior_train, allow_pickle=True)  

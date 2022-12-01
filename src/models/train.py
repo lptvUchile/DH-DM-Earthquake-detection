@@ -11,6 +11,8 @@ Created on Sun Oct  9 12:14:14 2022
 The goal of this code is to train and validate the DNN.
 Also to obtain the results of the model using DNN+HMM, using the training and validation database.
 """
+import sys
+sys.path.insert(1, '../utils/')
 
 import torch
 import torch.nn as nn
@@ -39,24 +41,26 @@ torch.backends.cudnn.deterministic = True
 
 
 #Features train and validation
-path_feat_train = '../../data/Iquique/features/Features_Iquique_Train.npy'   
-path_feat_val = '../../data/Iquique/features/Features_Iquique_Val.npy'
+#path_feat_train = '../../data/NorthChile/features/Features_NorthChile_Train.npy'   
+#path_feat_val = '../../data/NorthChile/features/Features_NorthChile_Val.npy'
+path_feat_train = '' #Features Matrix. Ouput of file Extraction_Features.py
+path_feat_val = ''  #Features Matrix. Ouput of file Extraction_Features.py
 
 #labels train and validation
-path_label_train = '../../data/Iquique/features/Probs_Iquique_Train.npy'
-path_label_val = '../../data/Iquique/features/Probs_Iquique_Val.npy'
+path_label_train = '../../data/NorthChile/features/Probs_NorthChile_Train.npy'
+path_label_val = '../../data/NorthChile/features/Probs_NorthChile_Val.npy'
 
 #Prior probability
-path_probPrior_train = '../../data/Iquique/features/Probs_Prior_Iquique_Train.npy'
-path_probPrior_val = '../../data/Iquique/features/Probs_Prior_Iquique_Val.npy'
+path_probPrior_train = '../../data/NorthChile/features/Probs_Prior_NorthChile_Train.npy'
+path_probPrior_val = '../../data/NorthChile/features/Probs_Prior_NorthChile_Val.npy'
 
 #Earthquakes references
-ref_file_train = '../../data/Iquique/reference/Referencia_Iquique_Train.xlsx'
-ref_file_val = '../../data/Iquique/reference/Referencia_Iquique_Val.xlsx'
+ref_file_train = '../../data/NorthChile/reference/Referencia_NorthChile_Train.xlsx'
+ref_file_val = '../../data/NorthChile/reference/Referencia_NorthChile_Val.xlsx'
 
 #path to SAC's
-sac_train = "../../data/Iquique/sac/Sac_Iquique_Train.scp"
-sac_val = "../../data/Iquique/sac/Sac_Iquique_Val.scp"
+sac_train = "../../data/NorthChile/sac/Sac_NorthChile_Train.scp"
+sac_val = "../../data/NorthChile/sac/Sac_NorthChile_Val.scp"
 
 
 
@@ -306,7 +310,7 @@ file_viterbi_val = 'results/Viterbi_DNN_val'
 #file_viterbi_train = 'results/Viterbi_DNN_train' #Este es el path que me gustaria que quedaran los ctm, pero no he podido
 
 phones="../../models/phones_3estados.txt"
-transitions_file="../../models/final_16_layers3_s1_lr001_Iquique.mdl"
+transitions_file="../../models/final_16_layers3_s1_lr001_NorthChile.mdl"
 
 #train
 Algoritmo_Viterbi(ref_file_train, file_viterbi_train, sac_train, phones, transitions_file, Probs_Observations_train, 'train')

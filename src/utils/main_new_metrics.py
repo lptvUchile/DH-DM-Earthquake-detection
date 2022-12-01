@@ -19,7 +19,7 @@ import IPython
 
 def metricas_viterbi(file_viterbi,ref_file_p, nombre_conjunto):
     thresholds = np.array([20]) # Threshold vector
-    results = 'Results' # output folder path
+    results = 'results' # output folder path
     # We create the folder where the results will be saved
     path_resultados = os.getcwd() +'/'+results
     """

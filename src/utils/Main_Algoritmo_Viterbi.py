@@ -21,7 +21,7 @@ def Algoritmo_Viterbi(ref_file_p,file_viterbi,sac,phones,transitions_file,Probs_
 
 
         #Path Resultados
-        path_results = 'Results'
+        path_results = 'results'
  
 
         #Lectura del archivo sac.scp.txt
