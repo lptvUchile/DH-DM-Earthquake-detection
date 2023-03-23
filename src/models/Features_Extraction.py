@@ -7,18 +7,19 @@ Created on Wed Dec 30 18:30:49 2020
 
 import numpy as np
 import os
-import numpy.matlib
 from kaldiio import WriteHelper #instalar via "pip install kaldiio"
-import shutil
-import math
 from obspy import read, read_inventory
 from scipy import signal
 from scipy import signal
 from obspy.clients.fdsn import Client
 import IPython
 import kaldi_io as kio
+import pandas as pd
+from obspy import read, UTCDateTime
+import numpy.matlib
+from os import remove
 
-# Configure
+# Configuracion
 nfft = 64
 output_units = 'VEL'
 Energy = 'E3'
@@ -26,22 +27,13 @@ escala = 'logaritmica'
 fs = 40
 frame_length=int(4000*fs/1000)
 frame_shift=int(2000*fs/1000)
+delta = 'Delta1'
 
 
-path_s5 = "" #You must define the path to the database you want to analyze.
-data_dir = ""#You must define the path to the file with the names of the sac
-
-data = "" #output file name
-#data = 'Features_48hrs_Test'
-
-
-#path_results = 'data/Iquique/features/'
-path_results = '../../data/NorthChile/features/' #nombre de la ruta de salida
-#path_results = 'data/Microsismos/features/'
-
-delta = 'Delta1' # type of calculation form of the delta parameter
-
-
+path_s5 = "../../data/NorthChile/sac/" # Se define la ruta de la base de datos que se quiere analizar. Po ejemplo ../../data/NorthChile/sac/.
+data = "Train" #Particion de la base de datos que se quiere extrae las caracteristicas. Por ejemplo Train, Train o Test.
+path_results = '../../data/NorthChile/features/' #nombre de la ruta de salida. Por ejemplo ../../data/NorthChile/features/.
+sac_scp = path_s5 + data+'.xlsx'
 
 
 
@@ -108,11 +100,6 @@ def butter_highpass(cutoff, fs, order=3):
     b, a = signal.butter(order, normal_cutoff, btype='high', analog=False)
     return b, a
 
-#filtro no causal. 
-def butter_highpass_filter(data, cutoff, fs, order=3):
-    b, a = butter_highpass(cutoff, fs, order=order)
-    y = signal.filtfilt(b, a, data) #el orden final del filtro es del doble del filtro original
-    return y
 
 #filtro causal
 def butter_highpass_lfilter(data, cutoff, fs, order=6):
@@ -182,46 +169,41 @@ def Contexto(traza):
 
 
 #el archivo wav.scp solo contiene informacion de un canal, a partir de ahi se sacan los demas canales.
-sac_scp = os.path.join(path_s5+'/'+data_dir+'/'+'sac.scp')
-ark_out = os.path.join(path_results + 'raw_mfcc_' + os.path.basename(data_dir) + '.1.ark')
-scp_out = os.path.join(path_results + 'raw_mfcc_' + os.path.basename(data_dir) + '.1.scp')
+
+ark_out = os.path.join(path_results + 'raw_mfcc_1.1.ark')
+scp_out = os.path.join(path_results + 'raw_mfcc_1.1.scp')
 
 
 
 
-#leemos listado de wavs
-with open(sac_scp) as f:
-    content = f.readlines()
+#leemos listado de sismogramas
+content = pd.read_excel(sac_scp)
+keys = content['name'].dropna()
 
-#contamos lineas no vacias
-lineas_no_vacias = 0
-for line in content:
-	if line.strip():
-		lineas_no_vacias += 1
-print('El archivo {:s} tiene {:d} lineas no vacias'.format(sac_scp,lineas_no_vacias))
-keys = [None]*lineas_no_vacias
-
-paths = [None] * lineas_no_vacias
-for i in range(lineas_no_vacias):   
-    line = content[i].strip()
-    if line!='':
-        keys[i] = line.strip().split(' ',1)[0]   
-        paths[i] = line.strip().split(' ',1)[1]
     
 
 with WriteHelper('ark,scp:{:s},{:s}'.format(ark_out, scp_out), compression_method=2) as writer:
-    for i in range(len(paths)):
-        sac = path_s5+'/'+paths[i]
-        print('Procesando sac {:s}'.format(sac))
-        read_sac1 = read(sac)
-        Estacion = read_sac1[0].stats.station
-        canal_E =  read_sac1[0].stats.channel
-        canal_N = canal_E[0:-1]+ 'N'
-        canal_Z = canal_E[0:-1]+ 'Z'
-        sac2 = sac.replace(canal_E,canal_N)
-        sac3 =sac.replace(canal_E,canal_Z)
-        read_sac2 = read(sac2)
-        read_sac3 = read(sac3)
+    for i in range(len(content)):
+        print(i)
+        network = content['network'].iloc[i]
+        if  network == 'C' or  network == 'C1':
+            service = 'IRIS'
+        else:
+            service = 'GFZ'
+        locations = '*'   #todos los locaciones disponibles para esa estacion
+        formato = 'SAC'
+        station = content['station'].iloc[i]
+        client = Client(service)
+        channels = content['channel'].iloc[i]
+        ini_time = UTCDateTime(content['starttime'].iloc[i])
+        end_time = UTCDateTime(content['endtime'].iloc[i])
+        read_sac1 = client.get_waveforms(network, station, locations, channels,ini_time,end_time )     
+
+        canal_N = channels[0:-1]+ 'N'
+        canal_Z = channels[0:-1]+ 'Z'
+        read_sac2 = client.get_waveforms(network, station, locations, canal_N ,ini_time,end_time )     
+        read_sac3 = client.get_waveforms(network, station, locations, canal_Z ,ini_time,end_time )     
+ 
 
 
         if np.shape(read_sac1)[1] != np.shape(read_sac2)[1] or np.shape(read_sac1)[1] != np.shape(read_sac3)[1] or np.shape(read_sac2)[1] != np.shape(read_sac3)[1]:
@@ -236,11 +218,9 @@ with WriteHelper('ark,scp:{:s},{:s}'.format(ark_out, scp_out), compression_metho
             rs = Client('IRIS')
         else:
             rs = Client('GFZ')
-        inv1 = rs.get_stations(network=read_sac1[0].stats.network, station=Estacion,level='response')
+        inv1 = rs.get_stations(network=read_sac1[0].stats.network, station=station,level='response')
         inv2 = inv1
         inv3 = inv1
-
-        #IPython.embed()
 
         
         if output_units != 'CUENTAS':
@@ -249,7 +229,7 @@ with WriteHelper('ark,scp:{:s},{:s}'.format(ark_out, scp_out), compression_metho
               read_sac3[0].remove_response(inventory=inv3, output=output_units)
 
         Factor_Reduccion = 5
-        if canal_E == 'HHE':
+        if channels == 'HHE':
            Cantidad_segundos = len(read_sac1)/100
            data1_upsample = signal.resample_poly(read_sac1[0].data, Cantidad_segundos*200,len(read_sac1))
            data1_resampleado = signal.decimate(data1_upsample,Factor_Reduccion)
@@ -287,14 +267,14 @@ with WriteHelper('ark,scp:{:s},{:s}'.format(ark_out, scp_out), compression_metho
 
 
 
-sac_scp = os.path.join(path_s5+'/'+data_dir+'/'+'sac.scp')
-ark_out = os.path.join(path_results + 'raw_mfcc_' + os.path.basename(data_dir) + '.1.ark')
-scp_out = os.path.join(path_results + 'raw_mfcc_' + os.path.basename(data_dir) + '.1.scp')
+
+ark_out = os.path.join(path_results + 'raw_mfcc_1.1.ark')
+scp_out = os.path.join(path_results + 'raw_mfcc_1.1.scp')
 
 
 
 
-ark_in = path_results + 'raw_mfcc_' + os.path.basename(data_dir) + '.1.ark'
+ark_in = path_results + 'raw_mfcc_1.1.ark'
 utt_base_raw,raw_features = [], []
 for key,mat in kio.read_mat_ark(ark_in):
     utt_base_raw.append(key)
@@ -332,7 +312,8 @@ for key,mat in kio.read_mat_ark(ark_in):
     utt_base_raw.append(key)
     raw_features.append(mat)
     base_contexto.append(Contexto(mat))#Aqui queda los features+contexto
-        # Se guarda en un ark los features estaticos + dinamicos
+    
+    # Se guarda en un ark los features estaticos + dinamicos
 print(np.shape(raw_features[0]))        
 
                 
@@ -340,6 +321,8 @@ print(np.shape(raw_features[0]))
      
 feat_context = np.array([np.array(x) for x in base_contexto])
 np.save(path_results + data + '.npy',feat_context)
+remove(ark_out)
+remove(scp_out)
 
 
 
