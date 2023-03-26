@@ -297,7 +297,7 @@ file_viterbi_train = 'results/Viterbi_DNN_train'
 file_viterbi_val = 'results/Viterbi_DNN_val'
 
 phones="../../models/phones_3estados.txt"
-transitions_file="../../models/final_16_layers3_s1_lr001"+database_train+".mdl"
+transitions_file="../../models/final_16_layers3_s1_lr001_"+database_train+".mdl"
 
 # Se aplica el algoritmo de Viterbi sobre una base de datos
 
