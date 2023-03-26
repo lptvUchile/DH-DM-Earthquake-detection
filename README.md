@@ -36,7 +36,7 @@ you can use the following for such:
     <p align="justify">4. Test_ViterbiFordado_DNN.py: This code implements the Forced Viterbi algorithm with the observation probabilities obtained from the DDN. The output corresponds to forced alignments.</p>
     <p align="justify">5. Duration parameters: Using the forced alignments of the DNN, the minimum and maximum duration of each state and event is estimated with the file src/utils/Estadisticas_estado_evento.py. The results of these estimations must be inserted in the Restrictions_Duracion_Estado.py and Restrictions_Duracion_Evento.py files. To calculate the parameters of the gamma function of the events, the Constantes_Parameteros_Duracion.py code must be executed.</p>
 
--  <p align="justify"> **Testing**: It is tested with the file src/models/test.py: the main objective of this code is to load an already trained model, which is saved in the models folder and test a new database. Detection times for each trace and a summary of the resulting metrics can be found in the src/models/Results folder</p>
+-  <p align="justify"> ** Testing **: It is tested with the file src/models/test.py: the main objective of this code is to load an already trained model, which is saved in the models folder and test a new database. Detection times for each trace and a summary of the resulting metrics can be found in the src/models/Results folder</p>
 
 
 --------------
