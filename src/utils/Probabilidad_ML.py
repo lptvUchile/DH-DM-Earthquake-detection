@@ -3,6 +3,7 @@ import numpy as np
 from scipy.special import exp10
 
 def Probabilidad_ML(i,j,k,N_frames,N_estados,a):
+    # Se define la probabilidad del modelo de lenguaje
     P_Transicion_Nuevas_2 = np.zeros(a)
     if k == 0 and i != N_frames-1 and i>1 :                    
       

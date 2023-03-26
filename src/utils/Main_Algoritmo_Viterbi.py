@@ -19,15 +19,10 @@ def Algoritmo_Viterbi(ref_file_p,file_viterbi,sac,phones,transitions_file,Probs_
         print('Analisis del conjunto de ', nombre_conjunto)
         start = time.time()
 
-
-        #Path Resultados
-        path_results = 'results'
  
 
-        #Lectura del archivo sac.scp.txt
-        Nombres_Archivos = open(sac, "r")
-        Lineas_Nombres_Archivos = Nombres_Archivos.readlines()
-        Nombres_Archivos.close()
+        #Lectura del archivo de información de la base de datos.
+        Lineas_Nombres_Archivos = list(pd.read_excel(sac)['name'])
 
 
         #Leemos la numeracion y el nombre de los fonemas

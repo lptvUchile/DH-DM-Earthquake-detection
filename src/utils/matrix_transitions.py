@@ -3,6 +3,7 @@ from copy import deepcopy
 
 
 def eliminar_duplicados(lista):
+    # Funcion que elimina elementos duplicados de una lista
     nueva_lista = []
     for elemento in lista:
         if not elemento in nueva_lista:
@@ -12,6 +13,7 @@ def eliminar_duplicados(lista):
 
 
 def Prob_Transicion_automatico(Vocabulario,lineas,Phones_lineas,type_exp):
+    # Funcion que genera una matriz de probabilidades de transicion entre [modelo,estado]
 
     LogProbs =[]
     for j in range(len(lineas)):
@@ -33,13 +35,8 @@ def Prob_Transicion_automatico(Vocabulario,lineas,Phones_lineas,type_exp):
                 Triples_vector.append(vector)
 
 
-                                   
-
-
     Phones_words = [[],[]]
     Phones_number = [[],[]]
-
-
     types = ['_B','_E','_I','_S']
     for j in range(len(Phones_lineas)):
         list_linea = Phones_lineas[j].split('\n')[0].split(' ')[0]
@@ -60,16 +57,11 @@ def Prob_Transicion_automatico(Vocabulario,lineas,Phones_lineas,type_exp):
         for i in range(len(Phones_number)):
             pdf.append([])
             for j in range(len(Phones_number[i])):
-                #pdf[i].append([])
-                #for l in range(3):
-                #    pdf[i][j].append([])
                 for k in Triples_vector:
                     if Phones_number[i][j][0]==k[0]:
-                        #print(int(k[1]))
                         pdf[i].append([k[2]]) 
 
     else:
-
         pdf = []
         for i in range(len(Phones_number)):
             pdf.append([])
@@ -88,8 +80,7 @@ def Prob_Transicion_automatico(Vocabulario,lineas,Phones_lineas,type_exp):
 
 
 
-    #Buscamos las probabilidades de transicion asociado a cada estado de cada fonema.
-     
+    #Buscamos las probabilidades de transicion asociado a cada estado de cada fonema.   
     Posiciones = deepcopy(pdf)
     Cantidad_estados = 0
     for i in range(len(pdf)):#Fonema
@@ -99,9 +90,6 @@ def Prob_Transicion_automatico(Vocabulario,lineas,Phones_lineas,type_exp):
                     if pdf[i][j][k]==Triples_vector[l][2]:
                         Posiciones[i][j][k] = l
                 Cantidad_estados = Cantidad_estados+1
-                  
-
-                    
                   
 
     #Creamos matriz de probabilidades de transicion
@@ -115,10 +103,6 @@ def Prob_Transicion_automatico(Vocabulario,lineas,Phones_lineas,type_exp):
                     Posiciones_inicio_palabras[i].append(n-1)
                 n=n+1
                     
-            
-        
-        
-      
                 
     Matriz_transicion = np.full((Cantidad_estados,Cantidad_estados), -np.inf)
     n=0
@@ -130,19 +114,13 @@ def Prob_Transicion_automatico(Vocabulario,lineas,Phones_lineas,type_exp):
                      Matriz_transicion[0,n] = float(LogProbs[0][Posiciones[i][j][k]*2+1])
                 else:
                     Matriz_transicion[n+1,n] = float(LogProbs[0][Posiciones[i][j][k]*2+1])
-            
-                        
+                  
                 n=n+1
 
-            
-
     #Completar diccionario
-
     Vocabulario['Phones'] = Phones_words
     Vocabulario['Number_Phones'] = Phones_number
 
-
-   
     Estados_vocab = list(Vocabulario['N_Estados']) 
     Estados_Estados_cumsum = np.cumsum(list(Vocabulario['N_Estados']))
     if type_exp:  

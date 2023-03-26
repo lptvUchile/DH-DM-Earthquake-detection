@@ -58,7 +58,7 @@ def Restricciones_Duracion_Estado(Token_Estado,N_Estados,Estado):
     tau_min_E8 = 1
     tau_max_E8 = 252
 
-    
+
     #Estado actual SIL=1   
     if Estado == [0,0]:
         

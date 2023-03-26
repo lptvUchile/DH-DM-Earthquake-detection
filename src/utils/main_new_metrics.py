@@ -18,6 +18,10 @@ import IPython
 
 
 def metricas_viterbi(file_viterbi,ref_file_p, nombre_conjunto):
+    """
+    Funcion que calcula las metricas de error entre las detecciones del algoritmo de viterbi
+    con una referencia
+    """
     thresholds = np.array([20]) # Threshold vector
     results = 'results' # output folder path
     # We create the folder where the results will be saved
@@ -64,9 +68,9 @@ def metricas_viterbi(file_viterbi,ref_file_p, nombre_conjunto):
 
         # We create a results folder for each threshold
         path_umbral = path_resultados+'/umbral_'+str(thresholds[i])
-        #if os.path.exists(path_umbral):
-        #    shutil.rmtree(path_umbral)
-        #os.makedirs(path_umbral)
+        if os.path.exists(path_umbral):
+            shutil.rmtree(path_umbral)
+        os.makedirs(path_umbral)
 
         # We calculate the detection metrics for each seismogram          
         results1,results2 = metrics_results(viterbi_p, ref_p_event, thresholds[i])
@@ -80,7 +84,6 @@ def metricas_viterbi(file_viterbi,ref_file_p, nombre_conjunto):
                                                         'Error_P':prom_result[2]}, 
                                                         ignore_index=True)
     
-
         # We save the results in excel format
         Precision = round(VP/(VP+FP),2)
         Recall = round(VP/(VP+FN),2)

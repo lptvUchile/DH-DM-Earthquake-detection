@@ -1,4 +1,5 @@
 def Escribir_ctm(Ruido_diff, Evento_diff,Nombres_Archivos,Indice,fs):
+    # Función que escribe en un archivo de texto los inicios y final de una detección sismica
     
     Nombre_sac = Nombres_Archivos[Indice].split(' ')[0]
     

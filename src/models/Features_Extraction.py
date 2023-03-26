@@ -29,15 +29,18 @@ frame_length=int(4000*fs/1000)
 frame_shift=int(2000*fs/1000)
 delta = 'Delta1'
 
+database = "NorthChile" # Nombre de la base de datos que se quiere analizar
+data = "Train" #Particion de la base de datos que se quiere extrae las caracteristicas. Por ejemplo 'Train', 'Val' o 'Test'.
 
-path_s5 = "../../data/NorthChile/sac/" # Se define la ruta de la base de datos que se quiere analizar. Po ejemplo ../../data/NorthChile/sac/.
-data = "Train" #Particion de la base de datos que se quiere extrae las caracteristicas. Por ejemplo Train, Train o Test.
-path_results = '../../data/NorthChile/features/' #nombre de la ruta de salida. Por ejemplo ../../data/NorthChile/features/.
+
+path_s5 = "../../data/"+database+"/sac/" # Se define la ruta de la base de datos que se quiere analizar. Por 'ejemplo ../../data/NorthChile/sac/'.
+path_results = '../../data/'+database+'/features/' #nombre de la ruta de salida. Por ejemplo '../../data/NorthChile/features/'.
 sac_scp = path_s5 + data+'.xlsx'
 
 
 
 def nfft_function(Y):
+    # Funcion que calcula la fft
     dimensiones = np.shape(Y)
     ptos=dimensiones[1]
     promedios=np.zeros((dimensiones[0],int(dimensiones[1]/2+1)))
@@ -53,6 +56,8 @@ def nfft_function(Y):
 
 
 def get_frames(signal, frame_length, frame_shift, window=None):
+    # Funcion que eventana una señal
+
     if window is None:
         window=np.hamming(frame_length) 
 
@@ -66,6 +71,8 @@ def get_frames(signal, frame_length, frame_shift, window=None):
     return Seg.T
 
 def parametrizador(senial, frame_length, frame_shift, nfft, escala,window=None):
+    # Funcion que parametriza una señal eventanada.
+
     y = get_frames(senial,frame_length,frame_shift)
     Y = np.abs(np.fft.fft(y, 256, axis=1))
     if escala == 'logaritmica':
@@ -78,6 +85,8 @@ def parametrizador(senial, frame_length, frame_shift, nfft, escala,window=None):
 
 
 def E2(senial, frame_length,frame_shift,escala):
+    # Cálculo de energia
+
     y = get_frames(senial,frame_length,frame_shift)        
     if escala =='logaritmica':
         Y = np.log10(np.sum(y**2,1))
@@ -86,6 +95,7 @@ def E2(senial, frame_length,frame_shift,escala):
     return Y
 
 def E3(senial, frame_length,frame_shift, escala):
+    # Cálculo de energia normalizada
     Edos = E2(senial, frame_length,frame_shift, escala)
     if escala == 'logaritmica':
        Salida = Edos-np.max(Edos)
@@ -95,6 +105,7 @@ def E3(senial, frame_length,frame_shift, escala):
 
 #Filtrar la señal
 def butter_highpass(cutoff, fs, order=3):
+    #Filtro pasa banda
     nyq = 0.5 * fs
     normal_cutoff = cutoff / nyq
     b, a = signal.butter(order, normal_cutoff, btype='high', analog=False)
@@ -131,7 +142,7 @@ def Delta1(feat, N,type):
 
 
 def Delta2(espectro):
-    ##print("len lista espec", len(lista_espectros))
+    # Funcion que calcula otra version de delta.
     n_bines = np.shape(espectro)[0]
     n_frames = np.shape(espectro)[1]
     Deltas = np.zeros([n_bines, n_frames])
@@ -146,6 +157,7 @@ def Delta2(espectro):
     return Deltas
 
 def Contexto(traza):
+    # Funcion que genera una matriz con contexto.
     shape = np.shape(traza)
     tam_contexto = 1
     feat_salida_traza = []
@@ -168,12 +180,8 @@ def Contexto(traza):
 
 
 
-#el archivo wav.scp solo contiene informacion de un canal, a partir de ahi se sacan los demas canales.
-
-ark_out = os.path.join(path_results + 'raw_mfcc_1.1.ark')
-scp_out = os.path.join(path_results + 'raw_mfcc_1.1.scp')
-
-
+ark_out = os.path.join(path_results + 'raw_mfcc_'+data+'.1.ark')
+scp_out = os.path.join(path_results + 'raw_mfcc_'+data+'.1.scp')
 
 
 #leemos listado de sismogramas
@@ -181,7 +189,7 @@ content = pd.read_excel(sac_scp)
 keys = content['name'].dropna()
 
     
-
+# Se calculan los features estaticos
 with WriteHelper('ark,scp:{:s},{:s}'.format(ark_out, scp_out), compression_method=2) as writer:
     for i in range(len(content)):
         print(i)
@@ -268,18 +276,19 @@ with WriteHelper('ark,scp:{:s},{:s}'.format(ark_out, scp_out), compression_metho
 
 
 
-ark_out = os.path.join(path_results + 'raw_mfcc_1.1.ark')
-scp_out = os.path.join(path_results + 'raw_mfcc_1.1.scp')
+ark_out = os.path.join(path_results + 'raw_mfcc_'+data+'.1.ark')
+scp_out = os.path.join(path_results + 'raw_mfcc_'+data+'.1.scp')
 
 
 
 
-ark_in = path_results + 'raw_mfcc_1.1.ark'
+ark_in = path_results + 'raw_mfcc_'+data+'.1.ark'
 utt_base_raw,raw_features = [], []
 for key,mat in kio.read_mat_ark(ark_in):
     utt_base_raw.append(key)
     raw_features.append(mat)
 print(np.shape(raw_features[0]))
+
 
 with WriteHelper('ark,scp:{:s},{:s}'.format(ark_out, scp_out), compression_method=2) as writer:
     #  Normalización
@@ -307,6 +316,7 @@ with WriteHelper('ark,scp:{:s},{:s}'.format(ark_out, scp_out), compression_metho
         writer(keys[i],feat_mvn_delta2)
 
 
+# Se calcula crea una matriz con contexto
 base_contexto = []
 for key,mat in kio.read_mat_ark(ark_in):
     utt_base_raw.append(key)
@@ -320,8 +330,7 @@ print(np.shape(raw_features[0]))
       
      
 feat_context = np.array([np.array(x) for x in base_contexto])
-np.save(path_results + data + '.npy',feat_context)
-remove(ark_out)
+np.save(path_results + 'Features_'+database+'_'+data + '.npy',feat_context)
 remove(scp_out)
 
 

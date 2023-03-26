@@ -23,6 +23,6 @@ def Sequence_MatrixProb(Alineaciones,Filename):
 
 
     Matrix_prob_state = np.array([np.array(x) for x in Matrix_prob])
-    np.save(Filename+'+.npy', Matrix_prob_state, allow_pickle=True)
+    np.save(Filename+'.npy', Matrix_prob_state, allow_pickle=True)
 
                         

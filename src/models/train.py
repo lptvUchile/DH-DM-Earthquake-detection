@@ -41,26 +41,28 @@ torch.backends.cudnn.deterministic = True
 
 
 #Features train and validation
-#path_feat_train = '../../data/NorthChile/features/Features_NorthChile_Train.npy'   
-#path_feat_val = '../../data/NorthChile/features/Features_NorthChile_Val.npy'
-path_feat_train = '' #Features Matrix. Ouput of file Extraction_Features.py
-path_feat_val = ''  #Features Matrix. Ouput of file Extraction_Features.py
+
+database_train = 'NorthChile' # Nombre de la base de datos con la que se quiere entrenar
+database_test = 'NorthChile' # Nombre de la base de datos con la que se quiere testear
+
+path_feat_train = '../../data/'+database_train+'/features/Features_'+database_train+'_Train.npy'   
+path_feat_val = '../../data/'+database_train+'/features/Features_'+database_train+'_Val.npy'
 
 #labels train and validation
-path_label_train = '../../data/NorthChile/features/Probs_NorthChile_Train.npy'
-path_label_val = '../../data/NorthChile/features/Probs_NorthChile_Val.npy'
+path_label_train = '../../data/'+database_train+'/features/Probs_'+database_train+'_Train.npy'
+path_label_val = '../../data/'+database_train+'/features/Probs_'+database_train+'_Val.npy'
 
 #Prior probability
-path_probPrior_train = '../../data/NorthChile/features/Probs_Prior_NorthChile_Train.npy'
-path_probPrior_val = '../../data/NorthChile/features/Probs_Prior_NorthChile_Val.npy'
+path_probPrior_train = '../../data/'+database_train+'/features/Probs_Prior_'+database_train+'_Train.npy'
+path_probPrior_val = '../../data/'+database_train+'/features/Probs_Prior_'+database_train+'_Val.npy'
 
 #Earthquakes references
-ref_file_train = '../../data/NorthChile/reference/Referencia_NorthChile_Train.xlsx'
-ref_file_val = '../../data/NorthChile/reference/Referencia_NorthChile_Val.xlsx'
+ref_file_train = '../../data/'+database_test+'/reference/Referencia_'+database_test+'_Train.xlsx'
+ref_file_val = '../../data/'+database_test+'/reference/Referencia_'+database_test+'_Val.xlsx'
 
-#path to SAC's
-sac_train = "../../data/NorthChile/sac/Sac_NorthChile_Train.scp"
-sac_val = "../../data/NorthChile/sac/Sac_NorthChile_Val.scp"
+#path to excel information test
+name_train = "../../data/"+database_test+"/sac/Train.xlsx"
+name_val = "../../data/"+database_test+"/sac/Val.xlsx"
 
 
 
@@ -85,10 +87,9 @@ y_val = torch.from_numpy(y_val)
 
 
 probPriorTrain  = np.load(path_probPrior_train, allow_pickle=True)
-#probPriorVal  = np.load(path_probPrior_val, allow_pickle=True)
 
 BATCH_SIZE = 256
-EPOCHS = 100
+EPOCHS = 20
 
 set_train, set_val = TensorDataset(X_train, y_train), TensorDataset(X_val, y_val)
 train_iterator = DataLoader(set_train, batch_size=BATCH_SIZE, shuffle=True)
@@ -96,7 +97,6 @@ val_iterator = DataLoader(set_val, batch_size=BATCH_SIZE, shuffle=True)
 
 INPUT_DIM = 918  #Features
 OUTPUT_DIM = 12  #States 
-
 
 #The DNN is defined
 class MLP(nn.Module):
@@ -114,18 +114,14 @@ class MLP(nn.Module):
         h_1 = F.relu(self.hidden_fc1(h_0))
         h_2 = F.relu(self.hidden_fc2(h_1))
         y_pred = self.output_fc(h_2)
-
         return y_pred,h_2
-
-
-
 
 model = MLP(INPUT_DIM, OUTPUT_DIM)
 
 def count_parameters(model):
+    # Funcion que cuenta el número de parámetros
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 print(f'The model has {count_parameters(model):,} trainable parameters')
-
 
 
 optimizer = optim.Adam(model.parameters(), lr= 0.0001) #Optimizer
@@ -145,26 +141,18 @@ def calculate_accuracy(y_pred, y):
 
 #Train function
 def train(model, iterator, optimizer, criterion, device):
-
     epoch_loss = 0
     epoch_acc = 0
     model.train()
 
     for (x, y) in iterator:
-
         x = x.to(device)
         y = y.to(device)
-
         optimizer.zero_grad()
-
         y_pred, _ = model(x.float())
-
         loss = criterion(y_pred, y)
-
         acc = calculate_accuracy(y_pred, y)
-
         loss.backward()
-
         optimizer.step()
 
         epoch_loss += loss.item()
@@ -178,16 +166,12 @@ def evaluate(model, iterator, criterion, device):
 
     epoch_loss = 0
     epoch_acc = 0
-
     model.eval()
 
     with torch.no_grad():
-
         for (x, y) in iterator:
-
             x = x.to(device)
             y = y.to(device)
-
             y_pred, _ = model(x.float())
             loss = criterion(y_pred, y)
             acc = calculate_accuracy(y_pred, y)
@@ -221,7 +205,7 @@ for epoch in range(EPOCHS):
     if valid_loss < best_valid_loss: 
         best_valid_loss = valid_loss
 
-        torch.save(model.state_dict(), '../../models/model_MLP_HMM.pt') #The DNN is saved
+        torch.save(model.state_dict(), '../../models/model_MLP_HMM_'+database_train+'.pt') #The DNN is saved
 
     end_time = time.monotonic()
     
@@ -247,7 +231,7 @@ Loss_DNN.to_csv('../../reports/Loss_DNN.csv')
 
 
 def get_predictions(model, iterator, device):
-
+    # Funcion que realiza la prediccion del modelo
     model.eval()
     feat = []
     labels = []
@@ -269,8 +253,11 @@ def get_predictions(model, iterator, device):
     return feat, labels, probs
 
 
-
 def DNN2ProbObs(feat_entrada):
+    """    
+    Funcion que calcula las probabilidad de observacion a partir de lo obtenido por
+    la DNN y las probabilidades a priori
+    """
     salida_DNN = []
     for traza in feat_entrada:
 
@@ -303,14 +290,16 @@ Probs_Observations_val = DNN2ProbObs(X_val)
 
 
 ##################################### Viterbi Algorithm  #######################################3
-
+sac_train = '../../data/'+database_test+'/sac/Train.xlsx'
+sac_val = '../../data/'+database_test+'/sac/Val.xlsx'
 
 file_viterbi_train = 'results/Viterbi_DNN_train'
 file_viterbi_val = 'results/Viterbi_DNN_val'
-#file_viterbi_train = 'results/Viterbi_DNN_train' #Este es el path que me gustaria que quedaran los ctm, pero no he podido
 
 phones="../../models/phones_3estados.txt"
-transitions_file="../../models/final_16_layers3_s1_lr001_NorthChile.mdl"
+transitions_file="../../models/final_16_layers3_s1_lr001"+database_train+".mdl"
+
+# Se aplica el algoritmo de Viterbi sobre una base de datos
 
 #train
 Algoritmo_Viterbi(ref_file_train, file_viterbi_train, sac_train, phones, transitions_file, Probs_Observations_train, 'train')

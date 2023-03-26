@@ -1,9 +1,12 @@
-
 import numpy as np
 
+"""
+Se calculan las probabilidad a priori de las alineaciones de viterbi forzado que se 
+generan con las estimaciones de la GMM
+"""
+
 # Ingreso de probabilidades de observacion
-#P = np.load('Target/Alineaciones_Viterbi_Forzados_Val_A1.npy',allow_pickle=True)
-P = np.load('../../data/Iquique/features/Alineaciones_ViterbiForzado_Iquique_Val.npy',allow_pickle=True)
+P = np.load('../../data/NorthChile/features/Alineaciones_ViterbiForzado_NorthChile_Val.npy',allow_pickle=True)
 Ps = np.empty([1,12])
     
 p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,T = 0,0,0,0,0,0,0,0,0,0,0,0,0  
@@ -40,5 +43,5 @@ p11 = p11/T
 p12 = p12/T
 
 Ps=([p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12])
-np.save('../../data/Iquique/features/Probs_Prior_Iquique_Val', Ps)
+np.save('../../data/NorthChile/features/Probs_Prior_NorthChile_Val', Ps)
 

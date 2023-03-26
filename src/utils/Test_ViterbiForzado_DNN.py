@@ -4,14 +4,17 @@ Created on Sun Oct  9 12:14:14 2022
 
 @author: Marc
 """
+
 import sys
 sys.path.insert(1, '../utils/')
 
+import time
+inicio = time.time()
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from Main_Algoritmo_Viterbi import Algoritmo_Viterbi
+from Main_Algoritmo_ViterbiForzado_DNN import Algoritmo_Viterbi_Forzado
 from torch.utils.data import DataLoader, Dataset, random_split, TensorDataset
 
 from sklearn import metrics
@@ -25,6 +28,7 @@ import random
 import time
 
 
+
 SEED = 42
 
 random.seed(SEED)
@@ -33,34 +37,30 @@ torch.manual_seed(SEED)
 torch.cuda.manual_seed(SEED)
 torch.backends.cudnn.deterministic = True
 
-name_database_train ='NorthChile' # Nombre de la base de datos con la que se quiere testear
-name_database_test ='NorthChile'  # Nombre de la base de datos con la que se quiere testear
-database_test = 'Val' # Selección de la base de datos a testear. Puede ser Test, Val o Train
 
+database_test = 'Val' # Selección de la base de datos a testear. Puede ser Test, Val o Train
+name_database_train = 'NorthChile' # Nombre de la base de datos con la que se quiere entrenar
+name_database_test =  'NorthChile' # Nombre de la base de datos con la que se quiere testear
 
 path_probPrior_train = '../../data/'+name_database_train+'/features/Probs_Prior_'+name_database_train+'_Train.npy'
 
 path_modelo = '../../models/model_MLP_HMM_'+name_database_train+'.pt'
 
-ref_file_test = '../../data/'+name_database_test +'/reference/Referencia_'+name_database_test +'_'+database_test+'.xlsx'
+ref_file_test = '../../data/'+name_database_test+'/reference/Referencia_'+name_database_test+'_'+database_test +'xlsx'
 
-path_feat_test = '../../data/'+name_database_test +'/features/Features_'+name_database_test+'_'+database_test+'.npy'
+path_feat_test = '../../data/'+name_database_test+'/features/Features_'+name_database_test+'_'+database_test +'.npy'   
 
-sac_test = "../../data/"+name_database_test +"/sac/"+database_test+'.xlsx'
-
-
-    
 probPriorTrain  = np.load(path_probPrior_train, allow_pickle=True)  
   
 #Se define el modelo
 class MLP(nn.Module):
     def __init__(self, input_dim, output_dim):
         super().__init__()
-
-        self.input_fc = nn.Linear(input_dim, 16)
-        self.hidden_fc1 = nn.Linear(16, 16)
-        self.hidden_fc2 = nn.Linear(16, 16)
+        self.input_fc = nn.Linear(input_dim, 16)  
+        self.hidden_fc1 = nn.Linear(16,16)
+        self.hidden_fc2 = nn.Linear(16,16)
         self.output_fc = nn.Linear(16, output_dim)
+
 
     def forward(self, x):
         batch_size = x.shape[0]
@@ -69,8 +69,7 @@ class MLP(nn.Module):
         h_1 = F.relu(self.hidden_fc1(h_0))
         h_2 = F.relu(self.hidden_fc2(h_1))
         y_pred = self.output_fc(h_2)
-
-        return y_pred, h_2
+        return y_pred,h_2
 
 
 INPUT_DIM = 918  #Features con contexto
@@ -83,10 +82,9 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model.load_state_dict(torch.load(path_modelo))
 
 def count_parameters(model):
-     # Funcion que cuenta el número de parámetros
+    # Funcion que cuenta el número de parámetros
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 print(f'The model has {count_parameters(model):,} trainable parameters')
-
 
 
 def get_predictions(model, iterator, device):
@@ -112,12 +110,12 @@ def get_predictions(model, iterator, device):
 
     return images, labels, probs
 
+
 def DNN2ProbObs(feat_entrada):
     """    
     Funcion que calcula las probabilidad de observacion a partir de lo obtenido por
     la DNN y las probabilidades a priori
     """
-     
     salida_DNN = []
     for traza in feat_entrada:
 
@@ -135,7 +133,6 @@ def DNN2ProbObs(feat_entrada):
         ruido = traza[:,0:3]
         evento = traza[:,3:]
         Probs_Observations.append([np.array(ruido),np.array(evento)])
-
     return Probs_Observations
 
 
@@ -150,11 +147,13 @@ phones="../../models/phones_3estados.txt"
 transitions_file="../../models/final_16_layers3_s1_lr001_"+name_database_train+".mdl"
 
 
-
 #test
 # Se aplica el algoritmo de Viterbi sobre una base de datos
-Algoritmo_Viterbi(ref_file_test, file_viterbi_test, sac_test, phones, transitions_file, Probs_Observations_test, 'test')
-
+Algoritmo_Viterbi_Forzado( phones,transitions_file,Probs_Observations_test,database_test,name_database_test)
 print(f'The model has {count_parameters(model):,} trainable parameters')
+
+fin = time.time()
+print(fin-inicio)
+
 
 

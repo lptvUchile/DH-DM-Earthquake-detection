@@ -1,5 +1,6 @@
 
 def Palabras_a_Estados(Vocabulario,Palabras):
+    # Asocia una palabra a una secuencia de estado
     
     Secuencia = []
     for i in Palabras:

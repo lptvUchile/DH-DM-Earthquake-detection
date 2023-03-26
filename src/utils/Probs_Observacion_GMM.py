@@ -6,7 +6,10 @@ from Parametros_Kaldi import Parametros_Kaldi
 from Ecuacion_Prob_Obs import Ecuacion_Prob_Obs
 
 def Probs_Observacion(Utt, Lineas_archivo,Vocabulario):
-
+    """
+    Funcion que crea una matriz de probabilidad de observación a partir de los datos estimados
+    con la GMM
+    """
     Estados_vocab = np.cumsum(list(Vocabulario['N_Estados']))
     [GCONSTS, MEANS_INVVARS, INV_VARS, N_Estados] = Parametros_Kaldi(Lineas_archivo)
     N_frames = Utt.shape[0]
@@ -16,7 +19,8 @@ def Probs_Observacion(Utt, Lineas_archivo,Vocabulario):
 
     for i in range(N_frames):
         num = 0
-        for j in range(N_Estados):            
+        for j in range(N_Estados):  
+
             #Esto es para un estado.
             numgauss = len(GCONSTS[j])
             Probabilidad = np.zeros((numgauss))

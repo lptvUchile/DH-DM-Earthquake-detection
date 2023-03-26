@@ -3,7 +3,8 @@ import pandas as pd
 
 
 def Probs_Transicion_Secuencia(Secuencia):
-
+    # Probabilidad de Transicion entre estados
+    
     N_estados_Sec = len(Secuencia)
     Matriz_Prob = np.zeros((N_estados_Sec,N_estados_Sec))
   

@@ -1,9 +1,5 @@
 def Guardar_Token(i,j,k,Coordenada,Token,Token_eventos):
-    
-    if Coordenada == [j,k]:
-        Token[i][j].append(Token[i-1][j][k]+1)
-    else: 
-        Token[i][j].append(1)
+    # Funcion que guarda la información del estado anterior del que proviene el estado actual
 
     if [j,k]==[0,0]:
         if Coordenada == [1,8]:
@@ -34,6 +30,7 @@ def Guardar_Token(i,j,k,Coordenada,Token,Token_eventos):
             Token_eventos[i][j].append(Token_eventos[i-1][j][k]+1)
         else:
             Token_eventos[i][j].append(1)
+
     elif [j,k] == [1,1]:
         if Coordenada == [1,0]:
             Token_eventos[i][j].append(Token_eventos[i-1][j][k-1]+1)

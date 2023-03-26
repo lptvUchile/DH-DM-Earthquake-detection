@@ -1,6 +1,7 @@
 import numpy as np
 
 def Parametros_Kaldi(Lineas_archivo):
+    # Se extrae la información de las medias, varianzas y constante gaussiana de cada estado
     GCONSTS = []
     MEANS_INVVARS = []
     INV_VARS = []

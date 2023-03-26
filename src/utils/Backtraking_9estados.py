@@ -2,6 +2,7 @@
 import numpy as np
 
 def Backtraking(N_frames,D,E, max_arg_2,max_arg_3):
+    # Funcion que realiza un bactracking para encontrar la secuencia óptima de estados.
     
     S_opt =[]
     max_value = 0

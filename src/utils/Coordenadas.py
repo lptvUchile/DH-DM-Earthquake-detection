@@ -1,7 +1,9 @@
 import numpy as np
-#Me falta comentar la función
+
 
 def Coordenadas(D,max_arg):
+    # Entrega la posicion [modelo, estado] que tiene la mayor probabilidad acumulada
+
     N_modelos = np.shape(D)[0]
     Indice = np.argmax(max_arg)
  

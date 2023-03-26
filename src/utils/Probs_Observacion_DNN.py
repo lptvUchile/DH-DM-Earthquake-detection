@@ -2,11 +2,15 @@ import numpy as np
 
 
 def Probs_Observacion_DNN(File,pdf):
+    """
+    Funcion que crea una matriz de probabilidad de observación a partir de los datos obtenidos
+    con la DNN
+    """
+    
     Contenido_Archivo = File.readlines()
-
-
     Probs=[]
     c=-1
+
     for i in Contenido_Archivo:
         e = i.split(' ')
         if len(e)==3:
@@ -16,8 +20,7 @@ def Probs_Observacion_DNN(File,pdf):
             filas = i.split(' ')
             columns = filas[2:-1]
             evento = []
-            silencio = []
-            
+            silencio = []         
             for j in pdf[0]:
                 for i in range(len(columns)):
                     if i==j:
@@ -25,9 +28,8 @@ def Probs_Observacion_DNN(File,pdf):
             for k in pdf[1]:
                 for i in range(len(columns)):
                     if i==k:
-                        evento.append(float(columns[i]))
-                        
-                    
+                        evento.append(float(columns[i]))             
             Probs[c].append([silencio,evento])
+
     return Probs
 

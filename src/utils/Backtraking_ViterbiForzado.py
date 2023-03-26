@@ -1,9 +1,9 @@
 
 def Backtraking(N_frames,Secuencia,E,Delta,max_value):
-    
+    # Funcion que realiza un bactracking para encontrar la secuencia óptima de estados.
+
     S_opt =[] 
     S_opt_Indices = []
-    
     S_opt.append(Secuencia[max_value])
  
 

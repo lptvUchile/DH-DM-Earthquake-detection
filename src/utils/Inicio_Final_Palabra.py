@@ -1,6 +1,7 @@
 
 def Inicio_Final_Palabra(Indices,Inicio_Fin):
-    
+    # Determina de una secuencia los frames de inicio y fin de un estado determinado
+
     Inicio = []
     if len(Indices[0]) == 1:
         Inicio.append(Indices[0][0])
@@ -14,13 +15,10 @@ def Inicio_Final_Palabra(Indices,Inicio_Fin):
             if i== 0:
                 Inicio.append(Indices[0][i])
                 if  Inicio_Fin[0][i] > 1:     
-                    Inicio.append(Indices[0][i + 1])
-                
-            
+                    Inicio.append(Indices[0][i + 1])    
             else:
                 if Inicio_Fin[0][i] > 1:
                     Inicio.append(Indices[0][i+1])  
-
 
     Fin = []
 

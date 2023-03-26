@@ -2,6 +2,7 @@ import numpy as np
 from Inicio_Final_Palabra import Inicio_Final_Palabra
 
 def Decoding_Palabras_SIL3(S_opt):
+    # Funcion que entrega los inicios y finales en frames de los eventos de silencio y sismos
 
     Ruido = [[],[]]
     Evento = [[],[]]
@@ -16,7 +17,6 @@ def Decoding_Palabras_SIL3(S_opt):
         elif S_opt[i] ==[1,8]:       
             Evento[1].append(i)  
     
-
     Ruido_diff = [list(np.diff(Ruido[0])),list(np.diff(Ruido[1]))]
     Evento_diff = [list(np.diff(Evento[0])),list(np.diff(Evento[1]))]
   
