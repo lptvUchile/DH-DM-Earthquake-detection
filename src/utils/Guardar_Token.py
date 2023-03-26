@@ -1,5 +1,10 @@
 def Guardar_Token(i,j,k,Coordenada,Token,Token_eventos):
     # Funcion que guarda la información del estado anterior del que proviene el estado actual
+    
+    if Coordenada == [j,k]:
+        Token[i][j].append(Token[i-1][j][k]+1)
+    else: 
+        Token[i][j].append(1)
 
     if [j,k]==[0,0]:
         if Coordenada == [1,8]:
