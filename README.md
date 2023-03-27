@@ -40,6 +40,3 @@ you can use the following for such:
 
 
 --------------
-
-## Links
-* <a href="https://drive.google.com/drive/folders/1wuC61PkiOQijR6jmmMmchectpmvkPFOm?usp=share_link" target="_blank">Database</a>
