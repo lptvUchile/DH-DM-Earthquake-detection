@@ -1,5 +1,19 @@
 def Guardar_Token(i,j,k,Coordenada,Token,Token_eventos):
-    # Funcion que guarda la información del estado anterior del que proviene el estado actual
+    """
+    Function to save the information of the previous state that leads to the current state.
+
+    Parameters:
+    i (int): Current time step.
+    j (int): Current model.
+    k (int): Current state.
+    Coordenate (list): Coordinates representing the current state [model, state].
+    Token (list): A 3D list to store token information.
+    Token_events (list): A 3D list to store token events information.
+
+    Returns:
+    Token (list): Updated 3D list of token information.
+    Token_events (list): Updated 3D list of token events information.
+    """
     
     if Coordenada == [j,k]:
         Token[i][j].append(Token[i-1][j][k]+1)

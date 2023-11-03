@@ -1,6 +1,18 @@
 import numpy as np
 
 def Sequence_MatrixProb(Alineaciones,Filename):
+    """
+    Function to create a matrix of state probabilities based on alignments.
+
+    Args:
+        Alignments (list): A list of alignments, where each alignment is a list of state transitions.
+        Filename (str): The filename for saving the output matrix.
+
+    This function processes alignments and generates a matrix of state probabilities.
+
+    Returns:
+        None
+    """
 
     Matrix_prob = []
     a=0

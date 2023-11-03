@@ -4,53 +4,65 @@ import numpy as np
 
 
 def Restricciones_Duracion_Evento(frame,N_frame,Estado, Modelo, Token_Evento, N_Estados):
-    
     """
-    Función que aplica las restricciones de duración de cualquier tipo de evento.
+    Function that applies duration constraints to any type of event.
 
     Args:
-        Estado (int): Estado que se está evaluando.
-        Modelo (int): Modelo que se está evaluando.
-        Token_Evento (Lista de Lista): Lista de Lista con dimensiones (Modelo, Estado), cuya
-                    información corresponde a la duración de la palabra de la que proviene.
-        Probs_Transicion (Lista de Lista): Lista de Lista con dimensiones (Modelo, Estado) 
-                    cuyo contenido corresponde a las probabilidades de transición al estado que 
-                    se está evaluando.
-
+        State (int): The state being evaluated.
+        Model (int): The model being evaluated.
+        Token_Event (List of Lists): List of Lists with dimensions (Model, State), where
+                    the information corresponds to the duration of the word it originates from.
+        Transition_Probs (List of Lists): List of Lists with dimensions (Model, State) 
+                    containing transition probabilities to the state being evaluated.
 
     Returns:
-        Nuevas_Probs_Transicion (Lista de Lista): Lista de Lista con dimensiones (Modelo, Estado) 
-                    cuyo contenido corresponde a las probabilidades de transición penalizadas
-                    por la duración que tiene la palabra al momento de evaluarla en un estado.
+        New_Transition_Probs (List of Lists): List of Lists with dimensions (Model, State) 
+                    containing transition probabilities penalized by the duration of the word
+                    at the moment of evaluation in a state.
     """
-    #Se realiza una copia para no alterar la matriz base de probabilidad de transición.
-    #Nuevas_Probs_Transicion_1 = np.copy(Probs_Transicion_1)
+    # A copy is made to avoid altering the base transition probability matrix.
     Nuevas_Probs_Transicion_1 = np.zeros(N_Estados)
-    Silencio =  False
+    Silencio = False
 
-    cte_min = 1
-    cte_max = 1
+    cte_min_evento = 1
+    cte_max_evento = 1
+    cte_min_sil = 1
+    cte_max_sil = 0.9
 
 	
-    #Se definen las cotas para las restricciones.
+    # Bounds for the constraints are defined.
     tau_min_sil =  3
-    tau_max_sil = 1251
+    tau_max_sil = 359
 
-    tau_min_evento = 14
-    tau_max_evento = 325
+    tau_min_evento = 9
+    tau_max_evento = 246
 
-    #Estas listas corresponden a los valores de k,alpha,rho de la pdf gamma.
-    const_sil = [0.09740596205154974,0.004206177606744674,0.2336910216531273]
-    const_ev = [1.543801734751951e-05,0.058826820965994404,0.490254114733414]
-
+    # These lists correspond to the values of k, alpha, and rho for the gamma probability density function (PDF).
+    const_sil = [0.05087268826527303, 0.004083307029459156, 0.4231122743925578]
+    const_ev = [0.04106021394602003, 0.005426343202140914, 0.5203863130853138]
     
-    #Restricciones de penalización para la duración de palabras asociada a la palabra !SIL.
+    """
+    # Iquique
+    tau_min_sil =  3
+    tau_max_sil = 25
+
+    tau_min_evento = 12
+    tau_max_evento = 67
+
+    # These lists correspond to the values of k, alpha, and rho for the gamma probability density function (PDF).
+    const_sil = [0.01977531557548385, 0.20818115412710006, 2.373265157048941]
+    const_ev = [8.342796895597173e-60, 0.8224271267102915, 45.48022010707912]
+    """
+
+
+
+    # Penalty constraints for the duration of words associated with the word !SIL.
     if frame < N_frame-1:
         if [Modelo,Estado] == [0,0]:
-            if Token_Evento[1][8] < tau_min_evento*cte_min:
+            if Token_Evento[1][8] < tau_min_evento*cte_min_evento:
                 Nuevas_Probs_Transicion_1[11] = np.log(0) 
 
-            elif Token_Evento[1][8] >= tau_max_evento*cte_max:
+            elif Token_Evento[1][8] >= tau_max_evento*cte_max_evento:
                 Nuevas_Probs_Transicion_1[11] = np.log(0) 
                 
             
@@ -63,10 +75,10 @@ def Restricciones_Duracion_Evento(frame,N_frame,Estado, Modelo, Token_Evento, N_
 
         elif [Modelo,Estado] == [1,0]:
             if Silencio == True:
-                if Token_Evento[0][2] < tau_min_sil*cte_min:
+                if Token_Evento[0][2] < tau_min_sil*cte_min_sil:
                         Nuevas_Probs_Transicion_1[2] = np.log(0) 
 
-                elif Token_Evento[0][2] >= tau_max_sil*cte_max:
+                elif Token_Evento[0][2] >= tau_max_sil*cte_max_sil:
                     Nuevas_Probs_Transicion_1[2] = np.log(0) 
 
 
@@ -76,10 +88,10 @@ def Restricciones_Duracion_Evento(frame,N_frame,Estado, Modelo, Token_Evento, N_
                     Nuevas_Probs_Transicion_1[2] = pdf_gamma_sil
     else:
         if [Modelo,Estado] == [1,8]:
-            if Token_Evento[1][8] < tau_min_evento*cte_min:
+            if Token_Evento[1][8] < tau_min_evento*cte_min_evento:
                 Nuevas_Probs_Transicion_1[11] = np.log(0) 
 
-            elif Token_Evento[1][8] >= tau_max_evento*cte_max:
+            elif Token_Evento[1][8] >= tau_max_evento*cte_max_evento:
                 Nuevas_Probs_Transicion_1[11] = np.log(0) 
                 
             
@@ -93,10 +105,10 @@ def Restricciones_Duracion_Evento(frame,N_frame,Estado, Modelo, Token_Evento, N_
 
         elif [Modelo,Estado] == [0,2]:
             if Silencio == True:
-                if Token_Evento[0][2] < tau_min_sil*cte_min:
+                if Token_Evento[0][2] < tau_min_sil*cte_min_sil:
                         Nuevas_Probs_Transicion_1[2] = np.log(0) 
 
-                elif Token_Evento[0][2] >= tau_max_sil*cte_max:
+                elif Token_Evento[0][2] >= tau_max_sil*cte_max_sil:
                     Nuevas_Probs_Transicion_1[2] = np.log(0) 
 
 
@@ -105,6 +117,5 @@ def Restricciones_Duracion_Evento(frame,N_frame,Estado, Modelo, Token_Evento, N_
                     pdf_gamma_sil = np.log(const_sil[0]*np.exp(-const_sil[1]*tau)*tau**(const_sil[2]-1))
                     Nuevas_Probs_Transicion_1[2] = pdf_gamma_sil
         
-            
 
     return Nuevas_Probs_Transicion_1

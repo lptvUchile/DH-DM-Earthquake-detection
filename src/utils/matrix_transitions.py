@@ -3,17 +3,37 @@ from copy import deepcopy
 
 
 def eliminar_duplicados(lista):
-    # Funcion que elimina elementos duplicados de una lista
-    nueva_lista = []
+    """
+    Removes duplicate elements from a list and returns a new list with unique elements.
+    
+    Args:
+        lista (list): The input list containing elements.
+
+    Returns:
+        list: A new list with duplicate elements removed.
+    """
+    nueva_lista = []  # Create a new list to store unique elements
     for elemento in lista:
-        if not elemento in nueva_lista:
-            nueva_lista.append(elemento)
-    return nueva_lista
+        if elemento not in nueva_lista:  # Check if the element is not already in the new list
+            nueva_lista.append(elemento)  # Add the unique element to the new list
+    return nueva_lista  # Return the new list with duplicates removed
+
 
 
 
 def Prob_Transicion_automatico(Vocabulario,lineas,Phones_lineas,type_exp):
-    # Funcion que genera una matriz de probabilidades de transicion entre [modelo,estado]
+    """
+    Generates a matrix of transition probabilities between [model, state].
+    
+    Args:
+        Vocabulario (DataFrame): A DataFrame containing vocabulary information.
+        lineas (list): List of lines from the transitions file.
+        Phones_lineas (list): List of phone lines.
+        type_exp (str): Type of experiment ('mono' or 'tri').
+
+    Returns:
+        list, DataFrame: A list containing the transition probability matrix and the updated vocabulary.
+    """
 
     LogProbs =[]
     for j in range(len(lineas)):
@@ -21,7 +41,7 @@ def Prob_Transicion_automatico(Vocabulario,lineas,Phones_lineas,type_exp):
             vector = lineas[j+1].split(' ')[3:-1]
             LogProbs.append(vector)
 
-    #Sacamos los triples con pdf
+    # Extract triples with pdf
     Triples = 'No'
     Triples_vector = []
     for j in range(len(lineas)):
@@ -51,7 +71,7 @@ def Prob_Transicion_automatico(Vocabulario,lineas,Phones_lineas,type_exp):
             Phones_words[1].append([list_linea])
             Phones_number[1].append([number_lineas])
 
-    #Sacamos los fonemas innecesarios. Nos quedamos solo con los _s.
+    # Remove unnecessary phonemes and keep only the '_s' ones.
     if type_exp == 'mono':
         pdf = []
         for i in range(len(Phones_number)):
@@ -80,7 +100,7 @@ def Prob_Transicion_automatico(Vocabulario,lineas,Phones_lineas,type_exp):
 
 
 
-    #Buscamos las probabilidades de transicion asociado a cada estado de cada fonema.   
+    # We search for the transition probabilities associated with each state of each phoneme.   
     Posiciones = deepcopy(pdf)
     Cantidad_estados = 0
     for i in range(len(pdf)):#Fonema
@@ -92,7 +112,7 @@ def Prob_Transicion_automatico(Vocabulario,lineas,Phones_lineas,type_exp):
                 Cantidad_estados = Cantidad_estados+1
                   
 
-    #Creamos matriz de probabilidades de transicion
+    # Create the transition probability matrix
     n=1
     Posiciones_inicio_palabras = []
     for i in range(len(Posiciones)): #fonema
@@ -117,17 +137,17 @@ def Prob_Transicion_automatico(Vocabulario,lineas,Phones_lineas,type_exp):
                   
                 n=n+1
 
-    #Completar diccionario
+    # Update the dictionary
     Vocabulario['Phones'] = Phones_words
     Vocabulario['Number_Phones'] = Phones_number
-
+    # Calculate vocabulary states
     Estados_vocab = list(Vocabulario['N_Estados']) 
     Estados_Estados_cumsum = np.cumsum(list(Vocabulario['N_Estados']))
     if type_exp:  
-        #Se divide la matriz por la cantidad de modelos total que se tiene.
+        # Split the probability matrix by the total number of models.
         Separar_Matriz_Prob = np.vsplit(Matriz_transicion,Estados_Estados_cumsum)[0:len(Estados_vocab)]
         
-        #Se transforma a lista para ser consistente en el código
+        # Convert to a list to be consistent in the code
         Matriz_Prob_Transicion = [i.tolist() for i in Separar_Matriz_Prob]
        
     return Matriz_Prob_Transicion,Vocabulario

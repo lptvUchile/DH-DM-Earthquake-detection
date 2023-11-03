@@ -102,19 +102,23 @@ OUTPUT_DIM = 12  #States
 class MLP(nn.Module):
     def __init__(self, input_dim, output_dim):
         super().__init__()
-        self.input_fc = nn.Linear(input_dim, 16)  
-        self.hidden_fc1 = nn.Linear(16,16)
-        self.hidden_fc2 = nn.Linear(16,16)
-        self.output_fc = nn.Linear(16, output_dim)
+        self.input_fc = nn.Linear(input_dim, 24)
+        self.hidden_fc1 = nn.Linear(24, 20)
+        self.hidden_fc2 = nn.Linear(20, 16)
+        self.hidden_fc3 = nn.Linear(16, 12)
+        self.output_fc = nn.Linear(12, output_dim)
+
 
     def forward(self, x):
+        # x = [batch size, height, width]
         batch_size = x.shape[0]
         x = x.view(batch_size, -1)
         h_0 = F.relu(self.input_fc(x))
         h_1 = F.relu(self.hidden_fc1(h_0))
         h_2 = F.relu(self.hidden_fc2(h_1))
-        y_pred = self.output_fc(h_2)
-        return y_pred,h_2
+        h_3 = F.relu(self.hidden_fc3(h_2))
+        y_pred = self.output_fc(h_3)
+        return y_pred, h_3
 
 model = MLP(INPUT_DIM, OUTPUT_DIM)
 
@@ -220,7 +224,7 @@ for epoch in range(EPOCHS):
     print(f'\t Val. Loss: {valid_loss:.3f} |  Val. Acc: {valid_acc*100:.2f}%')
     
     
-model.load_state_dict(torch.load('../../models/model_MLP_HMM.pt')) #The DNN is loaded
+model.load_state_dict(torch.load('../../models/model_MLP_HMM_'+database_train+'.pt')) #The DNN is loaded
 
 #ACC and Loss are saved for different analyses, for example, evaluate overfitting
 Acc_DNN = pd.DataFrame(data= {'Acc_Train':Train_acc, 'Acc_Val':Val_acc})

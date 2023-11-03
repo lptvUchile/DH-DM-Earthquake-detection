@@ -1,11 +1,9 @@
+sys.path.insert(1, '../utils/')
 import numpy as np
 import pandas as pd
 import time
 from scipy.special import exp10
-
 import sys
-sys.path.insert(1, '../utils/')
-
 from Viterbi_Log_9estados import Viterbi_Log_SIL3
 from Decoding_Palabras_9estados import Decoding_Palabras_SIL3
 from Escribir_ctm import Escribir_ctm
@@ -15,60 +13,73 @@ import warnings
 warnings.filterwarnings("ignore")
 
 
-def Algoritmo_Viterbi(ref_file_p,file_viterbi,sac,phones,transitions_file,Probs_Observacion, nombre_conjunto):
-        print('Analisis del conjunto de ', nombre_conjunto)
-        start = time.time()
 
- 
+def Algoritmo_Viterbi(ref_file_p, file_viterbi, sac, phones, transitions_file, Probs_Observacion, nombre_conjunto):
+    """
+    Implements the Viterbi algorithm for speech recognition.
 
-        #Lectura del archivo de información de la base de datos.
-        Lineas_Nombres_Archivos = list(pd.read_excel(sac)['name'])
+    Args:
+    - ref_file_p: Reference file.
+    - file_viterbi: Viterbi file.
+    - sac: Information from the database.
+    - phones: Phoneme information.
+    - transitions_file: File containing transition probabilities.
+    - Probs_Observacion: Observation probabilities.
+    - nombre_conjunto: Name of the dataset.
 
+    Returns: The sequence of states
+    """
+    print('Analysis of the', nombre_conjunto, 'dataset')
+    
+    # Start the timer
+    start = time.time()
 
-        #Leemos la numeracion y el nombre de los fonemas
-        Phones = open(phones, "r")
-        Phones_lineas = Phones.readlines()[1:-2]
-        Phones.close()
+    # Read information from the database file
+    Lineas_Nombres_Archivos = list(pd.read_excel(sac)['name'])
 
-        Vocabulario = {
-        'Palabra' : ['!SIL','EVENTO'],
-        'N_Estados': [3,9],
-        'N_Fonemas': [[1,3],[3,3]]
-                }
+    # Read phoneme numbering and names
+    Phones = open(phones, "r")
+    Phones_lineas = Phones.readlines()[1:-2]
+    Phones.close()
 
+    # Define the vocabulary and its properties
+    Vocabulario = {
+        'Palabra': ['!SIL', 'EVENTO'],
+        'N_Estados': [3, 9],
+        'N_Fonemas': [[1, 3], [3, 3]]
+    }
 
-        # 3. Se define pi
-        Prob_Inicial = [[exp10(-0.0017),0,0],[exp10(-2.7185),0,0,0,0,0,0,0,0]]
-        P_Inicial = [list(np.log(i)) for i in Prob_Inicial]
+    # Define initial probabilities (pi)
+    Prob_Inicial = [[exp10(-0.0017), 0, 0], [exp10(-2.7185), 0, 0, 0, 0, 0, 0, 0, 0]]
+    P_Inicial = [list(np.log(i)) for i in Prob_Inicial]
 
+    # Extract transition probabilities
+    topology = open(transitions_file, "r")
+    lineas = topology.readlines()
+    topology.close()
+    P_Transicion, Vocab = Prob_Transicion_automatico(Vocabulario, lineas, Phones_lineas, 'mono')
 
-        # 4. Se extraen las probabilidades de transición
-        topology = open(transitions_file, "r")
-        lineas = topology.readlines()
-        topology.close()
-        P_Transicion,Vocab = Prob_Transicion_automatico(Vocabulario,lineas,Phones_lineas,'mono')
-        fs = open(file_viterbi + '.ctm', 'w')
+    # Create and open a file for Viterbi results
+    fs = open(file_viterbi + '.ctm', 'w')
 
-        for Indice in range(len(Probs_Observacion)):
+    for Indice in range(len(Probs_Observacion)):
+        # Extract observation probabilities for the current utterance
+        P_Observacion = Probs_Observacion[Indice]
 
-                # 2. Probabilidades de obervacion por utterance
-                P_Observacion = Probs_Observacion[Indice]
+        # Calculate the Viterbi algorithm
+        Delta, Psi, S_opt = Viterbi_Log_SIL3(P_Transicion, P_Inicial, P_Observacion)
 
-                # 4.Función que calcula el Algoritmo de Viterbi.
-                Delta,Psi,S_opt = Viterbi_Log_SIL3(P_Transicion, P_Inicial, P_Observacion)
+        # Associate states and words
+        Ruido_diff, Evento_diff = Decoding_Palabras_SIL3(S_opt)
 
-                # 5.Funcion que asocie estados y palabras
-                Ruido_diff, Evento_diff = Decoding_Palabras_SIL3(S_opt)
-                Escribir_ctm(Ruido_diff, Evento_diff,Lineas_Nombres_Archivos, Indice, fs)
-        fs.close()
+        # Write the results to the output file
+        Escribir_ctm(Ruido_diff, Evento_diff, Lineas_Nombres_Archivos, Indice, fs)
 
+    fs.close()
 
-        end = time.time()
-        print('Tiempo: '+ str(end - start))
+    # End the timer and print the time taken
+    end = time.time()
+    print('Time:', str(end - start))
 
-        metricas_viterbi(file_viterbi+ '.ctm', ref_file_p, nombre_conjunto)
-
-
-
-
-
+    # Call the metric evaluation function
+    metricas_viterbi(file_viterbi + '.ctm', ref_file_p, nombre_conjunto)

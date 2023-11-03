@@ -1,8 +1,20 @@
 
 def Inicio_Final_Palabra(Indices,Inicio_Fin):
-    # Determina de una secuencia los frames de inicio y fin de un estado determinado
+    """
+    Determines the start and end frames of a specific state in a sequence.
 
+    Parameters:
+    Indices (list): A list of indices representing the state's location in the sequence.
+    Inicio_Fin (list): A list of start and end frame information for the state.
+
+    Returns:
+    Inicio (list): A list of start frames for the state.
+    Fin (list): A list of end frames for the state.
+    """
+     
+     # Code for determining start frames.
     Inicio = []
+
     if len(Indices[0]) == 1:
         Inicio.append(Indices[0][0])
     elif len(Indices[0]) == 2:
@@ -20,6 +32,7 @@ def Inicio_Final_Palabra(Indices,Inicio_Fin):
                 if Inicio_Fin[0][i] > 1:
                     Inicio.append(Indices[0][i+1])  
 
+    # Code for determining end frames..
     Fin = []
 
     if len(Indices[1]) == 1:
