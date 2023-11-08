@@ -46,12 +46,11 @@ def parametrizador(senial, frame_length, frame_shift, nfft, escala, window=None)
 
 def E2(senial, frame_length, frame_shift, escala):
     # Cálculo de energia
-
     y = get_frames(senial,frame_length,frame_shift)        
     if escala =='logaritmica':
         Y = np.log10(np.sum(y**2,1))
     elif escala == 'lineal':
-        Y = np.sum(y**2,1)
+        Y = np.sum(y**2, 1)
     return Y
 
 def E3(senial, frame_length,frame_shift, escala):
@@ -62,6 +61,14 @@ def E3(senial, frame_length,frame_shift, escala):
     elif escala == 'lineal':
        Salida = Edos/np.max(Edos)
     return Salida
+
+def energy_mapper(energy):
+    if energy == "E2":
+        return E2
+    elif energy == "E3":
+        return E3
+    else:
+        raise ValueError('Energy must be E2 or E3')
 
 #Filtrar la señal
 def butter_highpass(cutoff, fs, order=3):
