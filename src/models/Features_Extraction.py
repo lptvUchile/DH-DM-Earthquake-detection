@@ -129,8 +129,8 @@ if __name__ == '__main__':
                 waveform[0].data = waveform[0].data[:min_length]
 
             # Fetch station inventory once, note that it's the same for all waveforms
+
             inv = client.get_stations(network=waveform_kwargs['network'], station=waveform_kwargs['station'], level='response')
-            inv = client.get_stations()
 
             # Remove response if required
             if args.output_units != 'CUENTAS':
