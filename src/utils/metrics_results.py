@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from metrics_calculator import metrics_calculator
+from .metrics_calculator import metrics_calculator
 
     
 

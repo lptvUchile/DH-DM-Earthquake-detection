@@ -2,12 +2,12 @@ import numpy as np
 import itertools
  
 
-from Coordenadas import Coordenadas
-from Backtraking_9estados import Backtracking
-from Restricciones_Duracion_Estado import Restricciones_Duracion_Estado
-from Probabilidad_ML import Probabilidad_ML
-from Guardar_Token import Guardar_Token
-from Restricciones_Duracion_Evento_9estados import Restricciones_Duracion_Evento
+from .Coordenadas import Coordenadas
+from .Backtraking_9estados import Backtracking
+from .Restricciones_Duracion_Estado import Restricciones_Duracion_Estado
+from .Probabilidad_ML import Probabilidad_ML
+from .Guardar_Token import Guardar_Token
+from .Restricciones_Duracion_Evento_9estados import Restricciones_Duracion_Evento
 
 
 def Viterbi_Log_SIL3(P_Transicion, P_Inicial, P_Observacion):

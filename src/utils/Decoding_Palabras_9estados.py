@@ -1,5 +1,5 @@
 import numpy as np
-from Inicio_Final_Palabra import Inicio_Final_Palabra
+from .Inicio_Final_Palabra import Inicio_Final_Palabra
 
 def Decoding_Palabras_SIL3(S_opt):
     """

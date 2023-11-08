@@ -1,14 +1,13 @@
-sys.path.insert(1, '../utils/')
 import numpy as np
 import pandas as pd
 import time
 from scipy.special import exp10
 import sys
-from Viterbi_Log_9estados import Viterbi_Log_SIL3
-from Decoding_Palabras_9estados import Decoding_Palabras_SIL3
-from Escribir_ctm import Escribir_ctm
-from matrix_transitions import Prob_Transicion_automatico
-from main_new_metrics import metricas_viterbi
+from .Viterbi_Log_9estados import Viterbi_Log_SIL3
+from .Decoding_Palabras_9estados import Decoding_Palabras_SIL3
+from .Escribir_ctm import Escribir_ctm
+from .matrix_transitions import Prob_Transicion_automatico
+from .main_new_metrics import metricas_viterbi
 import warnings
 warnings.filterwarnings("ignore")
 

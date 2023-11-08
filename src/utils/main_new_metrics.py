@@ -11,9 +11,9 @@ import pandas as pd
 import numpy as np
 import os
 import shutil
-from metrics_results import metrics_results
-from prediction2ctm import prediction2ctm
-from seisbench2ctm import seisbench2ctm
+from .metrics_results import metrics_results
+from .prediction2ctm import prediction2ctm
+from .seisbench2ctm import seisbench2ctm
 import IPython
 
 
