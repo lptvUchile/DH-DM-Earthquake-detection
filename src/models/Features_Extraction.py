@@ -10,8 +10,8 @@ import argparse
 
 import numpy as np
 from kaldiio import WriteHelper #instalar via "pip install kaldiio"
+from obspy.core.stream import Stream
 from obspy import read, read_inventory
-from scipy import signal
 from obspy.clients.fdsn import Client
 import IPython
 import kaldi_io as kio
@@ -20,26 +20,48 @@ from obspy import read, UTCDateTime
 import numpy.matlib
 from os import remove
 
-from src.utils.ft_extraction_utils import parametrizador, Contexto, Delta_selector, butter_highpass_lfilter
-from src.utils.ft_extraction_utils import E2, E3
+from src.utils.ft_extraction_utils import parametrizador, Contexto, Delta_selector
+from src.utils.ft_extraction_utils import energy_mapper
 
-energy_mapper = {
-    'E2': E2,
-    'E3': E3
-}
+
+def process_waveform(
+    waveform: Stream, 
+    channels: str = 'HHE', 
+    reduction_factor: int = 5, 
+    fs: int = 40
+    ):
+    """
+    Process waveform to extract features
+    waveform: obspy.core.stream.Stream
+    """
+    from scipy import signal
+    from src.utils.ft_extraction_utils import butter_highpass_lfilter
+    # Process data
+    if channels == 'HHE':
+        n_secs = len(waveform[0].data) / 100
+        wave_upsampled = signal.resample_poly(waveform[0].data, n_secs * 200, len(waveform[0].data))
+        wave_resampled = signal.decimate(wave_upsampled, reduction_factor)
+        wave_processed = butter_highpass_lfilter(wave_resampled, cutoff=1, fs=fs, order=3)
+    else:
+        wave_processed = butter_highpass_lfilter(waveform[0].data, cutoff=1, fs=fs, order=3)
+    return wave_processed
+
 
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
+    parser.add_argument('--database', type=str, default='NorthChile')
+    parser.add_argument('--data', type=str, default='Val')
+    parser.add_argument('--data_path', type=str, default='./data')
+
     parser.add_argument('--nfft', type=int, default=64)
     parser.add_argument('--output_units', type=str, default='VEL')
     parser.add_argument('--Energy', type=str, default='E3')
     parser.add_argument('--escala', type=str, default='logaritmica')
     parser.add_argument('--fs', type=int, default=40)
     parser.add_argument('--delta', type=str, default='Delta1')
-    parser.add_argument('--database', type=str, default='NorthChile')
-    parser.add_argument('--data', type=str, default='Val')
-    parser.add_argument('--data_path', type=str, default='./data')
+    parser.add_argument('--reduction_factor', type=int, default=5)
+
     # # Configuracion
     # nfft = 64
     # output_units = 'VEL'
@@ -55,115 +77,93 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    Energy_func = energy_mapper[args.Energy]
-
-
+    # Frame params
     frame_length = int(4000*args.fs/1000)
     frame_shift = int(2000*args.fs/1000)
 
-    # Paths
+    # Relative Paths
     path_s5 = os.path.join(args.data_path, args.database, 'sac') # Se define la ruta de la base de datos que se quiere analizar. Por 'ejemplo ../../data/NorthChile/sac/'.
     path_results = os.path.join(args.data_path, args.database, 'features') #nombre de la ruta de salida. Por ejemplo '../../data/NorthChile/features/'.
     sac_scp = os.path.join(path_s5, args.data + '.xlsx')
-
+    
     ark_out = os.path.join(path_results + f'raw_mfcc_{args.data}.1.ark')
     scp_out = os.path.join(path_results + f'raw_mfcc_{args.data}.1.scp')
 
 
-    #leemos listado de sismogramas
+    # Read seismogram database from content in sac_scp
     content = pd.read_excel(sac_scp)
     keys = content['name'].dropna()
-
         
-    # Se calculan los features estaticos
+    # Static feature calculations
     with WriteHelper('ark,scp:{:s},{:s}'.format(ark_out, scp_out), compression_method=2) as writer:
         for i in range(len(content)):
             print(i)
-            network = content['network'].iloc[i]
-            if  network == 'C' or  network == 'C1':
-                service = 'IRIS'
-            else:
-                service = 'GFZ'
-            locations = '*'   #todos los locaciones disponibles para esa estacion
-            formato = 'SAC'
-            station = content['station'].iloc[i]
-            client = Client(service)
-            channels = content['channel'].iloc[i]
-            ini_time = UTCDateTime(content['starttime'].iloc[i])
-            end_time = UTCDateTime(content['endtime'].iloc[i])
-            read_sac1 = client.get_waveforms(network, station, locations, channels,ini_time,end_time )     
-
-            canal_N = channels[0:-1]+ 'N'
-            canal_Z = channels[0:-1]+ 'Z'
-            read_sac2 = client.get_waveforms(network, station, locations, canal_N ,ini_time,end_time )     
-            read_sac3 = client.get_waveforms(network, station, locations, canal_Z ,ini_time,end_time )     
-    
-
-
-            if np.shape(read_sac1)[1] != np.shape(read_sac2)[1] or np.shape(read_sac1)[1] != np.shape(read_sac3)[1] or np.shape(read_sac2)[1] != np.shape(read_sac3)[1]:
-                minimo = np.min([np.shape(read_sac1)[1],np.shape(read_sac2)[1],np.shape(read_sac3)[1]])
-                read_sac1[0].data = read_sac1[0].data[0:minimo]
-                read_sac2[0].data = read_sac2[0].data[0:minimo]
-                read_sac3[0].data = read_sac3[0].data[0:minimo]
-
-
-            if read_sac1[0].stats.network == 'C1' or read_sac1[0].stats.network == 'C':
-                rs = Client('IRIS')
-            else:
-                rs = Client('GFZ')
-            inv1 = rs.get_stations(network=read_sac1[0].stats.network, station=station,level='response')
-            inv2 = inv1
-            inv3 = inv1
-
-            
-            if args.output_units != 'CUENTAS':
-                read_sac1[0].remove_response(inventory=inv1, output=args.output_units)
-                read_sac2[0].remove_response(inventory=inv2, output=args.output_units)
-                read_sac3[0].remove_response(inventory=inv3, output=args.output_units)
-
-            Factor_Reduccion = 5
-            if channels == 'HHE':
-                Cantidad_segundos = len(read_sac1)/100
-                data1_upsample = signal.resample_poly(read_sac1[0].data, Cantidad_segundos*200,len(read_sac1))
-                data1_resampleado = signal.decimate(data1_upsample,Factor_Reduccion)
-                data1 = butter_highpass_lfilter(data1_resampleado, cutoff=1, fs=args.fs, order=3)
-
-
-                Cantidad_segundos = len(read_sac1)/100
-                data2_upsample = signal.resample_poly(read_sac2[0].data, Cantidad_segundos*200,len(read_sac1))
-                data2_resampleado = signal.decimate(data2_upsample,Factor_Reduccion)
-                data2 = butter_highpass_lfilter(data2_resampleado, cutoff=1, fs=args.fs, order=3)
-
-
-                Cantidad_segundos = len(read_sac1)/100
-                data3_upsample = signal.resample_poly(read_sac3[0].data, Cantidad_segundos*200,len(read_sac1))
-                data3_resampleado = signal.decimate(data3_upsample.data,Factor_Reduccion)
-                data3 = butter_highpass_lfilter(data3_resampleado, cutoff=1, fs=args.fs, order=3)
-
-            else:
-                data1 = butter_highpass_lfilter(read_sac1[0].data, cutoff=1, fs=args.fs, order=3)
-                data2 = butter_highpass_lfilter(read_sac2[0].data, cutoff=1, fs=args.fs, order=3)
-                data3 = butter_highpass_lfilter(read_sac3[0].data, cutoff=1, fs=args.fs, order=3)
-
-
-            feat1 = parametrizador(data1, frame_length, frame_shift, args.nfft, args.escala)    
-            feat2 = parametrizador(data2, frame_length, frame_shift, args.nfft, args.escala)
-            feat3 = parametrizador(data3, frame_length, frame_shift, args.nfft, args.escala) 
-            
-            feat = np.hstack([feat1, feat2, feat3]) 
-            feat_Energy = np.vstack((Energy_func(data1,frame_length,frame_shift, args.escala),
-                                        Energy_func(data2, frame_length,frame_shift, args.escala),
-                                        Energy_func(data3, frame_length,frame_shift, args.escala)))         
-            feat = np.hstack((feat, feat_Energy.T ))	
-            writer(keys[i],feat)
         
+            channels = [
+                content['channel'].iloc[i], 
+                content['channel'].iloc[i][0:-1] + 'N', 
+                content['channel'].iloc[i][0:-1] + 'Z'
+            ]
 
-    ark_out = os.path.join(path_results + f'raw_mfcc_{args.data}.1.ark')
-    scp_out = os.path.join(path_results + f'raw_mfcc_{args.data}.1.scp')
-    ark_in = os.path.join(path_results + f'raw_mfcc_{args.data}.1.ark')
+            waveform_kwargs = {
+                'network': content['network'].iloc[i],
+                'station': content['station'].iloc[i],
+                'location': "*",
+                'starttime': UTCDateTime(content['starttime'].iloc[i]),
+                'endtime': UTCDateTime(content['endtime'].iloc[i])
+            }
 
-    utt_base_raw,raw_features = [], []
-    for key,mat in kio.read_mat_ark(ark_in):
+            # Select service
+            service = 'IRIS' if waveform_kwargs['network'] in ('C', 'C1') else 'GFZ'    
+            client = Client(service)
+
+            # Fetch waveforms for all channels
+            waveforms = [
+                client.get_waveforms(channel=channel, **waveform_kwargs)
+                for channel in channels
+            ]
+
+            # Ensure all waveforms have the same length
+            min_length = min(np.shape(waveform)[1] for waveform in waveforms)
+            for waveform in waveforms:
+                waveform[0].data = waveform[0].data[:min_length]
+
+            # Fetch station inventory once, note that it's the same for all waveforms
+            inv = client.get_stations(network=waveform_kwargs['network'], station=waveform_kwargs['station'], level='response')
+            inv = client.get_stations()
+
+            # Remove response if required
+            if args.output_units != 'CUENTAS':
+                for waveform in waveforms:
+                    waveform[0].remove_response(inventory=inv, output=args.output_units)
+
+            # Process waveforms
+            parametrized_feats = []
+            energy_feats = []
+            for waveform in waveforms:
+                wave_processed = process_waveform(waveform)
+                # Parametrized features 
+                parametrized_feat = parametrizador(wave_processed, frame_length, frame_shift, args.nfft, args.escala)
+                # Energy features
+                energy_feat = energy_mapper(args.Energy)(wave_processed, frame_length, frame_shift, args.escala)
+                # Store features
+                parametrized_feats.append(parametrized_feat)
+                energy_feats.append(energy_feat)
+
+            # Concatenate features
+            parametrized_feats = np.hstack(parametrized_feats) 
+            energy_feats = np.vstack(energy_feats)
+            all_feats = np.hstack((parametrized_feats, energy_feats.T))	
+
+            # Write features
+            writer(keys[i], all_feats)
+
+    ark_out = os.path.join(path_results, f'raw_mfcc_{args.data}.1.ark')
+    scp_out = os.path.join(path_results, f'raw_mfcc_{args.data}.1.scp')
+    ark_in = os.path.join(path_results, f'raw_mfcc_{args.data}.1.ark')
+
+    utt_base_raw, raw_features = [], []
+    for key, mat in kio.read_mat_ark(ark_in):
         utt_base_raw.append(key)
         raw_features.append(mat)
     print(np.shape(raw_features[0]))
