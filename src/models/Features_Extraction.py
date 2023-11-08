@@ -30,13 +30,13 @@ frame_shift=int(2000*fs/1000)
 delta = 'Delta1'
 
 database = "NorthChile" # Nombre de la base de datos que se quiere analizar
-data = "Train" #Particion de la base de datos que se quiere extrae las caracteristicas. Por ejemplo 'Train', 'Val' o 'Test'.
+data = "Val" #Particion de la base de datos que se quiere extrae las caracteristicas. Por ejemplo 'Train', 'Val' o 'Test'.
 
+data_path = "./data"
 
-path_s5 = "../../data/"+database+"/sac/" # Se define la ruta de la base de datos que se quiere analizar. Por 'ejemplo ../../data/NorthChile/sac/'.
-path_results = '../../data/'+database+'/features/' #nombre de la ruta de salida. Por ejemplo '../../data/NorthChile/features/'.
-sac_scp = path_s5 + data+'.xlsx'
-
+path_s5 = os.path.join(data_path, database, 'sac') # Se define la ruta de la base de datos que se quiere analizar. Por 'ejemplo ../../data/NorthChile/sac/'.
+path_results = os.path.join(data_path, database, 'features') #nombre de la ruta de salida. Por ejemplo '../../data/NorthChile/features/'.
+sac_scp = os.path.join(path_s5, data + '.xlsx')
 
 
 def nfft_function(Y):
