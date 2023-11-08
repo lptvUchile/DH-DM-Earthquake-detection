@@ -4,14 +4,13 @@ Created on Sun Oct  9 12:14:14 2022
 
 @author: Marc
 """
-import sys
-sys.path.insert(1, '../utils/')
+import os 
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from Main_Algoritmo_Viterbi import Algoritmo_Viterbi
+from src.utils.Main_Algoritmo_Viterbi import Algoritmo_Viterbi
 from torch.utils.data import DataLoader, Dataset, random_split, TensorDataset
 
 from sklearn import metrics
@@ -37,17 +36,14 @@ name_database_train ='NorthChile' # Nombre de la base de datos con la que se qui
 name_database_test ='NorthChile'  # Nombre de la base de datos con la que se quiere testear
 database_test = 'Val' # Selección de la base de datos a testear. Puede ser Test, Val o Train
 
+data_path = "./data"
+models_path = "./models"
 
-path_probPrior_train = '../../data/'+name_database_train+'/features/Probs_Prior_'+name_database_train+'_Train.npy'
-
-path_modelo = '../../models/model_MLP_HMM_'+name_database_train+'.pt'
-
-ref_file_test = '../../data/'+name_database_test +'/reference/Referencia_'+name_database_test +'_'+database_test+'.xlsx'
-
-path_feat_test = '../../data/'+name_database_test +'/features/Features_'+name_database_test+'_'+database_test+'.npy'
-
-sac_test = "../../data/"+name_database_test +"/sac/"+database_test+'.xlsx'
-
+path_probPrior_train = os.path.join(data_path, name_database_train, "features", f"Probs_Prior_{name_database_train}_Train.npy")
+path_modelo = os.path.join(models_path, f"model_MLP_HMM_{name_database_train}.pt")
+ref_file_test = os.path.join(data_path, name_database_test, "reference", f"Referencia_{name_database_test}_{database_test}.xlsx")
+path_feat_test = os.path.join(data_path, name_database_test, "features", f"Features_{name_database_test}_{database_test}.npy")
+sac_test = os.path.join(data_path, name_database_test, "sac", f"{database_test}.xlsx")
 
     
 probPriorTrain  = np.load(path_probPrior_train, allow_pickle=True)  
@@ -146,10 +142,10 @@ Probs_Observations_test = DNN2ProbObs(X_test)
 
 ##################################### Algoritmo Viterbi #######################################3
 
-file_viterbi_test = 'results/Viterbi_DNN_test'
-phones="../../models/phones_3estados.txt"
-transitions_file="../../models/final_16_layers3_s1_lr001_"+name_database_train+".mdl"
+file_viterbi_test = './src/models/results/Viterbi_DNN_test'
 
+phones = os.path.join(models_path, "phones_3estados.txt")
+transitions_file = os.path.join(models_path, f"final_16_layers3_s1_lr001_{name_database_train}.mdl")
 
 
 #test
