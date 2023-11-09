@@ -26,9 +26,7 @@ from src.utils.ft_extraction_utils import energy_mapper
 
 def process_waveform(
     waveform: Stream, 
-    channels: str = 'HHE', 
-    reduction_factor: int = 5, 
-    fs: int = 40
+    process_kwargs: dict = {}
     ):
     """
     Process waveform to extract features
@@ -36,14 +34,26 @@ def process_waveform(
     """
     from scipy import signal
     from src.utils.ft_extraction_utils import butter_highpass_lfilter
+
+    waveform_data = waveform[0].data
+
+    filter_kwargs = process_kwargs.pop("filter_kwargs", {})
+
     # Process data
-    if channels == 'HHE':
-        n_secs = len(waveform[0].data) / 100
-        wave_upsampled = signal.resample_poly(waveform[0].data, n_secs * 200, len(waveform[0].data))
-        wave_resampled = signal.decimate(wave_upsampled, reduction_factor)
-        wave_processed = butter_highpass_lfilter(wave_resampled, cutoff=1, fs=fs, order=3)
-    else:
-        wave_processed = butter_highpass_lfilter(waveform[0].data, cutoff=1, fs=fs, order=3)
+    if process_kwargs:
+        #n_secs = len(waveform_data) / 100
+        wave_upsampled = signal.resample_poly(
+            x=waveform[0].data,
+            **process_kwargs.get("resample_poly_kwargs", {})
+        )
+        waveform_data = signal.decimate(
+            wave_upsampled, 
+            **process_kwargs.get("decimate_kwargs", {})
+        )
+    wave_processed = butter_highpass_lfilter(
+        waveform_data, 
+        **filter_kwargs
+    )
     return wave_processed
 
 
@@ -96,7 +106,7 @@ if __name__ == '__main__':
         
     # Static feature calculations
     with WriteHelper('ark,scp:{:s},{:s}'.format(ark_out, scp_out), compression_method=2) as writer:
-        for i in range(len(content)):
+        for i in range(102, len(content)):
             print(i)
         
             channels = [
@@ -138,10 +148,31 @@ if __name__ == '__main__':
                     waveform[0].remove_response(inventory=inv, output=args.output_units)
 
             # Process waveforms
-            parametrized_feats = []
-            energy_feats = []
+            parametrized_feats, energy_feats = [], []
             for waveform in waveforms:
-                wave_processed = process_waveform(waveform)
+                # Process kwargs
+                process_kwargs = {
+                    "filter_kwargs": {
+                        "cutoff": 1,
+                        "fs": args.fs,
+                        "order": 3
+                    }
+                }
+                # Resample and decimate when HHE channel is set
+                if channels[0] == "HHE":
+                    process_kwargs["resample_poly_kwargs"] = {
+                        "up": len(waveforms[0][0].data) / 100 * 200,  #? Why upsampling only with first waveform information?
+                        "down": len(waveforms[0][0].data) #? Why downsampling only with first waveform information?
+                    }
+                    process_kwargs["decimate_kwargs"] = {
+                        "q": args.reduction_factor
+                    }
+
+                wave_processed = process_waveform(
+                    waveform, 
+                    process_kwargs=process_kwargs
+                )
+
                 # Parametrized features 
                 parametrized_feat = parametrizador(wave_processed, frame_length, frame_shift, args.nfft, args.escala)
                 # Energy features
