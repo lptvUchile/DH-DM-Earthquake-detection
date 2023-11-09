@@ -22,31 +22,6 @@ import pandas as pd
 import copy
 import random
 import time
-
-
-SEED = 42
-
-random.seed(SEED)
-np.random.seed(SEED)
-torch.manual_seed(SEED)
-torch.cuda.manual_seed(SEED)
-torch.backends.cudnn.deterministic = True
-
-name_database_train ='NorthChile' # Nombre de la base de datos con la que se quiere testear
-name_database_test ='NorthChile'  # Nombre de la base de datos con la que se quiere testear
-database_test = 'Val' # Selección de la base de datos a testear. Puede ser Test, Val o Train
-
-data_path = "./data"
-models_path = "./models"
-
-path_probPrior_train = os.path.join(data_path, name_database_train, "features", f"Probs_Prior_{name_database_train}_Train.npy")
-path_modelo = os.path.join(models_path, f"model_MLP_HMM_{name_database_train}.pt")
-ref_file_test = os.path.join(data_path, name_database_test, "reference", f"Referencia_{name_database_test}_{database_test}.xlsx")
-path_feat_test = os.path.join(data_path, name_database_test, "features", f"Features_{name_database_test}_{database_test}.npy")
-sac_test = os.path.join(data_path, name_database_test, "sac", f"{database_test}.xlsx")
-
-    
-probPriorTrain  = np.load(path_probPrior_train, allow_pickle=True)  
   
 #Se define el modelo
 class MLP(nn.Module):
@@ -69,22 +44,9 @@ class MLP(nn.Module):
         y_pred = self.output_fc(h_3)
         return y_pred, h_3
 
-
-INPUT_DIM = 918  #Features con contexto
-OUTPUT_DIM = 12  #Estados 
-
-model = MLP(INPUT_DIM, OUTPUT_DIM)
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-
-model.load_state_dict(torch.load(path_modelo))
-
 def count_parameters(model):
      # Funcion que cuenta el número de parámetros
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
-print(f'The model has {count_parameters(model):,} trainable parameters')
-
-
 
 def get_predictions(model, iterator, device):
     # Funcion que realiza la prediccion del modelo
@@ -135,23 +97,62 @@ def DNN2ProbObs(feat_entrada):
 
     return Probs_Observations
 
+if __name__ == '__main__':
 
-X_test = np.load(path_feat_test, allow_pickle = True)
-Probs_Observations_test = DNN2ProbObs(X_test)
+    SEED = 42
+
+    random.seed(SEED)
+    np.random.seed(SEED)
+    torch.manual_seed(SEED)
+    torch.cuda.manual_seed(SEED)
+    torch.backends.cudnn.deterministic = True
+
+    name_database_train ='NorthChile' # Nombre de la base de datos con la que se quiere testear
+    name_database_test ='NorthChile'  # Nombre de la base de datos con la que se quiere testear
+    database_test = 'Val' # Selección de la base de datos a testear. Puede ser Test, Val o Train
+
+    data_path = "./data"
+    models_path = "./models"
+
+    path_probPrior_train = os.path.join(data_path, name_database_train, "features", f"Probs_Prior_{name_database_train}_Train.npy")
+    path_modelo = os.path.join(models_path, f"model_MLP_HMM_{name_database_train}.pt")
+    ref_file_test = os.path.join(data_path, name_database_test, "reference", f"Referencia_{name_database_test}_{database_test}.xlsx")
+    path_feat_test = os.path.join(data_path, name_database_test, "features", f"Features_{name_database_test}_{database_test}.npy")
+    sac_test = os.path.join(data_path, name_database_test, "sac", f"{database_test}.xlsx")
+
+        
+    probPriorTrain  = np.load(path_probPrior_train, allow_pickle=True)  
 
 
-##################################### Algoritmo Viterbi #######################################3
 
-file_viterbi_test = './src/models/results/Viterbi_DNN_test'
+    INPUT_DIM = 918  #Features con contexto
+    OUTPUT_DIM = 12  #Estados 
 
-phones = os.path.join(models_path, "phones_3estados.txt")
-transitions_file = os.path.join(models_path, f"final_16_layers3_s1_lr001_{name_database_train}.mdl")
+    model = MLP(INPUT_DIM, OUTPUT_DIM)
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
-#test
-# Se aplica el algoritmo de Viterbi sobre una base de datos
-Algoritmo_Viterbi(ref_file_test, file_viterbi_test, sac_test, phones, transitions_file, Probs_Observations_test, 'test')
+    model.load_state_dict(torch.load(path_modelo))
 
-print(f'The model has {count_parameters(model):,} trainable parameters')
+    print(f'The model has {count_parameters(model):,} trainable parameters')
+
+
+    X_test = np.load(path_feat_test, allow_pickle = True)
+    Probs_Observations_test = DNN2ProbObs(X_test)
+
+
+    ##################################### Algoritmo Viterbi #######################################3
+
+    file_viterbi_test = './src/models/results/Viterbi_DNN_test'
+
+    phones = os.path.join(models_path, "phones_3estados.txt")
+    transitions_file = os.path.join(models_path, f"final_16_layers3_s1_lr001_{name_database_train}.mdl")
+
+
+    #test
+    # Se aplica el algoritmo de Viterbi sobre una base de datos
+    Algoritmo_Viterbi(ref_file_test, file_viterbi_test, sac_test, phones, transitions_file, Probs_Observations_test, 'test')
+
+    print(f'The model has {count_parameters(model):,} trainable parameters')
 
 
